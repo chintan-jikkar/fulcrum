@@ -1,33 +1,31 @@
 # Checkpoint
 
-Overwritten at each checkpoint. History lives in git tags. Last updated: 2026-10-14.
+Overwritten at each checkpoint. History lives in git tags (`checkpoint-p0-scaffold`, `p0-done`). Last updated: 2026-10-14.
 
 ## Where we are
 
-**Phase P0 (Foundation): code complete, exit criterion only partly verified.**
+**Phase P0 (Foundation): done and verified.** Tag `p0-done`, commit `5bc446b`. Repo: https://github.com/chintan-jikkar/fulcrum (public, so no real data goes in).
 
-Done and verified locally:
-- `backend/`: FastAPI app with `/health`, env-based config (`app/config.py`), SQLAlchemy engine and `Base` (`app/db.py`), Alembic wired to the same settings (no migrations yet; offline `upgrade head` runs clean).
-- `ruff check`, `ruff format --check`, `mypy --strict` and `pytest` (1 test) all pass.
-- `docker-compose.yml` (Postgres 16 + API), `backend/Dockerfile`, `.github/workflows/ci.yml` (lint/types/tests job and a compose smoke job), `.gitignore`, `README.md`.
+Verified:
+- `docker compose up --build` works locally (OrbStack) and `/health` returns 200.
+- CI is green on `5bc446b`: the `backend` job (ruff, ruff format, mypy --strict, pytest) and the `compose` job (`docker compose up --build --wait` plus a `/health` check).
+- Alembic connects to the live Postgres 16 and creates `alembic_version`. There are no migrations yet.
 
-**Not verified:**
-- `docker compose up` has never run: Docker is not installed on this Mac.
-- CI has never run: there is no GitHub remote yet.
-- Alembic against a live Postgres (only the offline mode was run).
+Things to know:
+- `api` has no healthcheck, so `--wait` returns before uvicorn listens. The CI curl uses `--retry-all-errors` for that reason. Add a real healthcheck if the race ever comes back.
+- The test suite is one test with no database. P1 tests hit Postgres, so the CI `backend` job needs a Postgres service container the moment the first DB test lands.
 
 ## Next steps
 
-1. Install Docker (Docker Desktop or OrbStack), then `docker compose up --build` and open `http://127.0.0.1:8000/health`.
-2. Create the GitHub repo (the free Pages plan means public; no real data goes in), push, and confirm both CI jobs go green.
-3. Tag `p0-done`. P0's exit criterion is met only after steps 1 and 2.
-4. Start P1.
+1. Start P1 (ledger core and tenancy, backend only). First task is in the resume prompt below.
+2. Resolve O-1 (auth provider) and O-2 (API and DB hosting) before P2. Neither blocks P1.
 
 ## Model guidance
 
+**Start P1 on a bigger model.** Switch in the app before opening the session.
+
 | Next work | Bigger model? | Why |
 |---|---|---|
-| Finish P0 (steps above) | No | Mechanical |
 | P1 ledger core | **Yes** | Deferred constraint triggers (I1, I2, I5), composite-FK tenancy (I6), append-only trigger (I7), Hypothesis property tests. A subtle mistake here silently corrupts money. |
 | P2 UI screens | No | Clear spec |
 | P2 auth, CORS, deploy | **Yes** | Security configuration |
@@ -40,7 +38,7 @@ Done and verified locally:
 ## Resume prompt
 
 ```
-FULCRUM. Read docs/CLAUDE.md and docs/CHECKPOINT.md. Phase: P1. Today: <task>.
+FULCRUM. Read docs/CLAUDE.md and docs/CHECKPOINT.md. Phase: P1. Today: write failing tests, then the first Alembic migration, for users, counterparties, accounts, categories, transactions and postings with invariants I1, I2, I3, I5, I6 and I7 enforced in the database.
 ```
 
 ## Still open
