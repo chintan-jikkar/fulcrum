@@ -51,6 +51,15 @@ Status: **LOCKED** (ledger core; see CLAUDE.md §0 for the change protocol) · *
 - **D-032 · 2026-10-14 · DEFAULT** — Local Python is 3.13.9 (uv used an installed interpreter); Docker and CI use 3.12, and ruff and mypy target 3.12. Reason: avoids downloading another interpreter. Revisit if a version-specific bug appears.
 - **D-033 · 2026-10-14 · DEFAULT** — The container runs `alembic upgrade head` on start, for local development only. Before the P2 deploy this must become a separate release step. Reason: several instances starting together would race on migrations.
 
+## Added at P1
+
+- **D-034 · 2026-10-14 · DEFAULT** — The first migration enforces some §3.3 shape rules in the database beyond the I-list: kind matches subtype, `counterparty_id` set iff receivable/payable, at most one `world` and one `opening` per user, at most one receivable and one payable per counterparty, `refund_of_id` only on `refund`. Reason: each is one line of SQL, and balances, I5 and "created on first use" all rely on them.
+- **D-035 · 2026-10-14 · PENDING** — An account's `kind`, `subtype` and `counterparty_id` cannot change after creation (trigger, errors as I5). Reason: I5 counts `world` legs by subtype at write time; turning a bank into `world` later would silently re-categorise its history. This is a new rule; the owner should confirm it.
+- **D-036 · 2026-10-14 · LOCKED** — I7 also refuses TRUNCATE on postings. The §7 purge lifts I7 with `set_config('fulcrum.purge_user_id', <user id>, true)` inside its own database transaction: DELETE of that user's postings only, never UPDATE, and the setting ends with the transaction. Implements D-015. Reason: the narrowest exception that still allows the purge. It stops application bugs, not the database owner, so the deployed API must connect as a role that does not own the tables (P2).
+- **D-037 · 2026-10-14 · DEFAULT** — Database invariant errors name their rule: trigger messages start `I<n>:` and constraints are named `i<n>_...`. Reason: the service layer can map a database error to the rule it broke without parsing prose.
+- **D-038 · 2026-10-14 · DEFAULT** — DB tests run on real Postgres, in a fresh `<db>_test` database recreated each run; tests commit for real and need no cleanup. CI's `backend` job gets a Postgres 16 service. Reason: deferred triggers only fire at COMMIT, which rollback-per-test fixtures would never reach.
+- **D-039 · 2026-10-14 · DEFAULT** — Migration 0001 is hand-written SQL, and SQLAlchemy models arrive with the services that use them. `idempotency_keys` gets its own migration with the idempotency work. Reason: the schema is reviewed as SQL (§15), and nothing reads it from Python yet.
+
 ---
 
 ## Open items

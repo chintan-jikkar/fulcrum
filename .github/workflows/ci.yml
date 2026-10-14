@@ -8,6 +8,20 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    # The ledger tests run against real Postgres; credentials match docker-compose.yml (CI only).
+    services:
+      db:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fulcrum
+          POSTGRES_PASSWORD: fulcrum
+          POSTGRES_DB: fulcrum
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fulcrum"
+          --health-interval 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: backend
