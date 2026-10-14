@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      # Local development only. Never reuse these anywhere real.
+      POSTGRES_USER: fulcrum
+      POSTGRES_PASSWORD: fulcrum
+      POSTGRES_DB: fulcrum
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fulcrum"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://fulcrum:fulcrum@db:5432/fulcrum
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
