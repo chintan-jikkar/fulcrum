@@ -3,6 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+import app.models.ledger  # noqa: F401  (registers the models on Base.metadata)
 from app.config import settings
 from app.db import Base
 
@@ -14,8 +15,8 @@ if config.config_file_name is not None:
 if not config.get_main_option("sqlalchemy.url"):
     config.set_main_option("sqlalchemy.url", settings.database_url)
 
-# Models register themselves on Base.metadata when imported. Import them above this line as
-# they are added. Migrations are written and reviewed by hand; never trust autogenerate blindly.
+# Models register themselves on Base.metadata when imported (above). Migrations are written
+# and reviewed by hand; never trust autogenerate blindly.
 target_metadata = Base.metadata
 
 
