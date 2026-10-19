@@ -72,6 +72,7 @@ def post(
     template: str,
     legs: list[tuple[uuid.UUID, int]],
     category: uuid.UUID | None = None,
+    refund_of: uuid.UUID | None = None,
 ) -> uuid.UUID:
     """Insert a transaction and its postings exactly as given. No validation: that is the point."""
     txn = insert(
@@ -81,6 +82,7 @@ def post(
         template=template,
         occurred_on="2026-03-01",
         category_id=category,
+        refund_of_id=refund_of,
     )
     for account, amount in legs:
         insert(
@@ -124,10 +126,7 @@ def test_every_template_shape_from_claude_md_section_4_commits(conn: Connection)
     post(conn, t, "transfer", [(t.chase, 30000), (t.wallet, -30000)])
     post(conn, t, "opening", [(t.chase, 150000), (t.opening, -150000)])
     post(conn, t, "opening", [(t.opening, 20000), (t.amex, -20000)])
-    refund = post(conn, t, "refund", [(t.chase, 1000), (t.world, -1000)], t.food)
-    conn.execute(
-        text("UPDATE transactions SET refund_of_id = :s WHERE id = :r"), {"s": spend, "r": refund}
-    )
+    post(conn, t, "refund", [(t.chase, 1000), (t.world, -1000)], t.food, refund_of=spend)
     conn.commit()
 
     assert posting_count(conn, spend) == 2
@@ -458,6 +457,37 @@ def test_refund_link_only_on_refunds(conn: Connection) -> None:
             category_id=t.food,
             refund_of_id=spend,
         )
+
+
+# --- R-14, R-15: a transaction's facts are fixed; a void is final ---------------------------
+
+
+@pytest.mark.parametrize(
+    "assignment",
+    [
+        "template = 'income'",
+        "occurred_on = '2026-03-02'",
+        "user_id = gen_random_uuid()",
+        "refund_of_id = id",
+        "created_at = now() - interval '1 day'",
+    ],
+)
+def test_r14_transaction_facts_cannot_be_updated(conn: Connection, assignment: str) -> None:
+    t = make_tenant(conn)
+    txn = post(conn, t, "spend", [(t.world, 4000), (t.chase, -4000)], t.food)
+    conn.commit()
+    with pytest.raises(IntegrityError, match="R-14"):
+        conn.execute(text(f"UPDATE transactions SET {assignment} WHERE id = :t"), {"t": txn})
+
+
+@pytest.mark.parametrize("assignment", ["voided_at = NULL", "voided_at = now() + interval '1 s'"])
+def test_r15_a_void_cannot_be_undone_or_restamped(conn: Connection, assignment: str) -> None:
+    t = make_tenant(conn)
+    txn = post(conn, t, "spend", [(t.world, 4000), (t.chase, -4000)], t.food)
+    conn.execute(text("UPDATE transactions SET voided_at = now() WHERE id = :t"), {"t": txn})
+    conn.commit()
+    with pytest.raises(IntegrityError, match="R-15"):
+        conn.execute(text(f"UPDATE transactions SET {assignment} WHERE id = :t"), {"t": txn})
 
 
 # --- The migration itself -------------------------------------------------------------------
