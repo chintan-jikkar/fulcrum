@@ -1,4 +1,4 @@
-"""Property tests P-1 to P-7, P-9 and P-10 (SCENARIOS.md §E). P-8 needs the HTTP layer.
+"""Property tests P-1 to P-7, P-9 and P-10 (SCENARIOS.md §E). P-8 is in test_idempotency.py.
 
 Hypothesis generates sequences of template calls, voids and recategorisations spread over two
 users. Each call is replayed into a plain-Python model that writes its own postings straight from

@@ -4,7 +4,7 @@ One row per (user, Idempotency-Key). The row is written when a POST starts, with
 the response is stored when it finishes. A replay of a row with no response is still in flight
 and gets 409. Keys are scoped per user, so two tenants can never see each other's responses.
 
-Retention is 7 days; the cleanup job arrives with the idempotency middleware.
+Retention is 7 days; expired keys are deleted when the user next claims a key (D-056).
 
 Revision ID: 0002
 Revises: 0001
