@@ -396,9 +396,18 @@ def _check_details(subtype: AccountSubtype, details: dict[str, Any]) -> None:
         isinstance(last4, str) and len(last4) == 4 and last4.isascii() and last4.isdigit()
     ):
         raise RuleViolation("account", "last4 must be exactly four digits")
+    # A design is one of the drawn ones, or a plain colour as #rrggbb (stored lower-case).
     design = details.get("card_design")
-    if design is not None and design not in CARD_DESIGNS:
-        raise RuleViolation("account", f"card_design is not one of the designs: {design!r}")
+    if design is not None:
+        colour = (
+            isinstance(design, str)
+            and len(design) == 7
+            and design[0] == "#"
+            and all(c in "0123456789abcdef" for c in design[1:].lower())
+        )
+        if design not in CARD_DESIGNS and not colour:
+            raise RuleViolation("account", f"card_design is not a design or a colour: {design!r}")
+        details["card_design"] = design.lower()  # in place: callers store this dict
 
 
 def edit_account(

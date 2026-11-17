@@ -1349,3 +1349,37 @@ a.tile:hover {
     26px 26px,
     auto;
 }
+
+/* A plain-colour card: the colour with a gentle darker corner (D-072). */
+.design-solid {
+  background: linear-gradient(135deg, var(--card), color-mix(in srgb, var(--card) 70%, #000));
+}
+.colours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.colour-pick {
+  position: relative;
+  width: 40px;
+  height: 26px;
+  padding: 0;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  overflow: hidden;
+}
+.colour-pick.on {
+  box-shadow:
+    0 0 0 2px var(--bg, #000),
+    0 0 0 4px var(--accent);
+}
+.colour-pick.custom {
+  background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+}
+.colour-pick.custom input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}

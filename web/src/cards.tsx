@@ -23,7 +23,29 @@ export const DESIGNS: { key: string; name: string }[] = [
   { key: "blossom", name: "Blossom" },
 ];
 
-const NEUTRAL_CARD = "#2a3350";
+/** Plain colours, for a simple card. Any other colour can be picked with the custom swatch. */
+export const COLOURS: { color: string; name: string }[] = [
+  { color: "#111214", name: "Black" },
+  { color: "#1c2133", name: "Navy" },
+  { color: "#1565a8", name: "Blue" },
+  { color: "#2f5d50", name: "Green" },
+  { color: "#9aa3ad", name: "Silver" },
+  { color: "#b08d57", name: "Gold" },
+  { color: "#b76e79", name: "Rose" },
+  { color: "#8e2b2b", name: "Red" },
+];
+
+export const NEUTRAL_CARD = "#2a3350";
+
+/** A design is a drawn one ("aurora") or a plain colour ("#1565a8"). Class and style for it. */
+function look(design: string): { className: string; style?: CSSProperties } {
+  if (!design.startsWith("#")) return { className: `design-${design}` };
+  // A plain colour gets a gentle darker corner and text that stays readable on it.
+  return {
+    className: "design-solid",
+    style: { "--card": design, "--card-ink": inkOn(design) } as CSSProperties,
+  };
+}
 
 /**
  * A picture of the card: its design (or the bank's colour until one is picked), the issuer's
@@ -32,13 +54,14 @@ const NEUTRAL_CARD = "#2a3350";
  * licensed source (D-070).
  */
 export function CardArt({ card, design }: { card: Account; design?: string | null }) {
-  const picked = design ?? card.credit?.design;
-  const fill = card.brand?.color ?? NEUTRAL_CARD;
+  // Without a design, the card is the bank's colour.
+  const { className, style } = look(
+    design ?? card.credit?.design ?? card.brand?.color ?? NEUTRAL_CARD,
+  );
   return (
     <div
-      className={picked ? `card-art design-${picked}` : "card-art"}
-      // Without a design, the card is the bank's colour with text that stays readable on it.
-      style={picked ? undefined : ({ "--card": fill, "--card-ink": inkOn(fill) } as CSSProperties)}
+      className={`card-art ${className}`}
+      style={style}
       role="img"
       aria-label={`${card.name}${card.last4 ? ` ending in ${card.last4}` : ""}`}
     >
@@ -60,5 +83,8 @@ export function CardArt({ card, design }: { card: Account; design?: string | nul
 
 /** A thumbnail of a card's design: on Activity rows, Overview tiles and the design picker. */
 export function MiniCard({ design, title }: { design: string; title?: string }) {
-  return <span className={`mini-card design-${design}`} title={title} aria-hidden="true" />;
+  const { className, style } = look(design);
+  return (
+    <span className={`mini-card ${className}`} style={style} title={title} aria-hidden="true" />
+  );
 }

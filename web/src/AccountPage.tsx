@@ -5,7 +5,7 @@ import { type FormEvent, useState } from "react";
 import { Activity } from "./Activity";
 import { toMinor } from "./amount";
 import { type Account, type Book, post } from "./api";
-import { CardArt, DESIGNS, MiniCard } from "./cards";
+import { CardArt, COLOURS, DESIGNS, MiniCard, NEUTRAL_CARD } from "./cards";
 import { AccountMark, Field } from "./ui";
 
 /** "Due today", "Due tomorrow", "Due in 4 days". Counting days is calendar work, not money. */
@@ -31,6 +31,11 @@ function Details(props: {
   const [due, setDue] = useState(credit?.due_day?.toString() ?? "");
   const [statement, setStatement] = useState(credit?.statement_day?.toString() ?? "");
   const [design, setDesign] = useState(credit?.design ?? "");
+  // Picking a colour or a design shows it on the card at the top before it is saved.
+  const pick = (value: string) => {
+    setDesign(value);
+    props.onPreview(value);
+  };
   const [error, setError] = useState<string | null>(null);
 
   const save = async (event: FormEvent) => {
@@ -64,6 +69,38 @@ function Details(props: {
       <h2>Edit {account.name}</h2>
       {isCard && (
         <>
+          <span className="muted small">Colour</span>
+          <div className="colours" role="radiogroup" aria-label="Card colour">
+            {COLOURS.map((c) => (
+              <button
+                type="button"
+                key={c.color}
+                role="radio"
+                aria-checked={design === c.color}
+                aria-label={c.name}
+                title={c.name}
+                className={design === c.color ? "colour-pick on" : "colour-pick"}
+                style={{ background: c.color }}
+                onClick={() => pick(c.color)}
+              />
+            ))}
+            {/* Any colour at all: the browser's own colour picker, behind a rainbow swatch. */}
+            <label
+              className={
+                design.startsWith("#") && !COLOURS.some((c) => c.color === design)
+                  ? "colour-pick custom on"
+                  : "colour-pick custom"
+              }
+              title="Any colour"
+            >
+              <input
+                type="color"
+                value={design.startsWith("#") ? design : NEUTRAL_CARD}
+                onChange={(e) => pick(e.target.value)}
+                aria-label="Any colour"
+              />
+            </label>
+          </div>
           <span className="muted small">Design</span>
           <div className="designs" role="radiogroup" aria-label="Card design">
             {DESIGNS.map((d) => (
@@ -73,10 +110,7 @@ function Details(props: {
                 role="radio"
                 aria-checked={design === d.key}
                 className={design === d.key ? "design-pick on" : "design-pick"}
-                onClick={() => {
-                  setDesign(d.key);
-                  props.onPreview(d.key);
-                }}
+                onClick={() => pick(d.key)}
               >
                 <MiniCard design={d.key} />
                 <span className="small">{d.name}</span>

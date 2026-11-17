@@ -117,3 +117,12 @@ def test_every_design_name_is_accepted(me: Caller) -> None:
     for design in sorted(CARD_DESIGNS):
         r = me.post_raw(f"/accounts/{card}", card_design=design)
         assert r.status_code == 200, design
+
+
+def test_a_plain_colour_is_a_design_too(me: Caller) -> None:
+    card = me.post("/accounts", name="Card", subtype="credit_card", card_design="#1A2b3c")
+
+    assert card["credit"]["design"] == "#1a2b3c"  # stored lower-case
+    for bad in ("red", "#12345", "#1234567", "#12345g", "1a2b3c"):
+        r = me.post_raw(f"/accounts/{card['id']}", card_design=bad)
+        assert r.status_code == 422, bad
