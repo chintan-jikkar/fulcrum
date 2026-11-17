@@ -6,6 +6,7 @@ import { type FormEvent, useState } from "react";
 
 import { toMinor } from "./amount";
 import { type Book, type Person, post, type SplitOut } from "./api";
+import { pickable } from "./Categories";
 import { Field, Sheet } from "./ui";
 
 /** One shared item as typed: its price, and how many units each person gets ("me" is you). */
@@ -31,7 +32,7 @@ export function SplitBill(props: { book: Book; onClose: () => void; onDone: () =
   const accounts = book.accounts.filter(
     (a) => a.is_active && ["cash", "bank", "credit_card"].includes(a.subtype),
   );
-  const categories = book.categories.filter((c) => c.kind === "expense" && !c.is_archived);
+  const categories = pickable(book.categories, "expense");
   const others = book.people.filter((p) => !people.some((q) => q.id === p.id));
 
   // Any change after a review makes it stale, so it is cleared and Review shows again.
@@ -164,7 +165,7 @@ export function SplitBill(props: { book: Book; onClose: () => void; onDone: () =
               </option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.label}
                 </option>
               ))}
             </select>

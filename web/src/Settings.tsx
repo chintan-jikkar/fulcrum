@@ -1,9 +1,10 @@
-// Settings: a short list (Profile, Accounts, Appearance); each row opens its own page.
+// Settings: a short list (Profile, Accounts, Categories, Appearance); each row opens a page.
 import { type FormEvent, useState } from "react";
 
 import { toMinor } from "./amount";
 import type { Kind } from "./AddAccount";
 import { type Account, type Book, post } from "./api";
+import { CategoriesPanel } from "./Categories";
 import { loadMode, loadTheme, type Mode, PRESETS, saveMode, saveTheme, type Theme } from "./theme";
 import { AccountMark, Field } from "./ui";
 
@@ -232,7 +233,7 @@ function AppearancePanel() {
   );
 }
 
-type Page = "profile" | "accounts" | "appearance";
+type Page = "profile" | "accounts" | "categories" | "appearance";
 
 export function Settings({
   book,
@@ -263,6 +264,12 @@ export function Settings({
       title: "Accounts",
       detail: `${active} active${mine.length > active ? `, ${mine.length - active} archived` : ""}`,
       glyph: "▤",
+    },
+    {
+      id: "categories",
+      title: "Categories",
+      detail: `${book.categories.filter((c) => !c.is_archived).length} in use`,
+      glyph: "◇",
     },
     {
       id: "appearance",
@@ -322,6 +329,9 @@ export function Settings({
               ))}
             </div>
           </section>
+        )}
+        {page === "categories" && (
+          <CategoriesPanel categories={book.categories} onChanged={onChanged} />
         )}
         {page === "appearance" && <AppearancePanel />}
       </div>

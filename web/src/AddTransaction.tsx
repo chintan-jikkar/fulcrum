@@ -3,6 +3,7 @@ import { type FormEvent, useState } from "react";
 
 import { toMinor } from "./amount";
 import { type Book, type Person, type Template, post } from "./api";
+import { pickable } from "./Categories";
 import { TEMPLATES } from "./templates";
 import { Field, Sheet } from "./ui";
 
@@ -41,7 +42,7 @@ export function AddTransaction(props: {
   const spec = TEMPLATES.find((t) => t.id === templateId)!;
   const accountsFor = (subtypes: string[]) =>
     book.accounts.filter((acct) => acct.is_active && subtypes.includes(acct.subtype));
-  const categories = book.categories.filter((c) => c.kind === spec.category && !c.is_archived);
+  const categories = spec.category ? pickable(book.categories, spec.category) : [];
 
   const choose = (id: Template) => {
     setTemplateId(id);
@@ -177,7 +178,7 @@ export function AddTransaction(props: {
               </option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.label}
                 </option>
               ))}
             </select>

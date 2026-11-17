@@ -1542,3 +1542,17 @@ a.tile:hover {
   display: flex;
   justify-content: space-between;
 }
+
+/* --- Settings › Categories (D-080): rows reuse .acct-row ---------------------------------- */
+.acct-row.sub {
+  padding-left: 22px; /* a subcategory sits under its parent */
+}
+.acct-edit select {
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--field);
+}
+.add-category .form-error {
+  width: 100%;
+}

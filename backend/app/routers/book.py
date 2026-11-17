@@ -27,7 +27,7 @@ from app.models.ledger import (
 from app.money import Money, money, percent
 from app.routers.deps import Db, IdempotencyKeyHeader, UserId
 from app.routers.transactions import request_id
-from app.services import figures, ledger, users
+from app.services import categories, figures, ledger, users
 
 router = APIRouter(tags=["book"])
 
@@ -361,6 +361,78 @@ def list_categories(user_id: UserId, engine: Db) -> list[CategoryOut]:
     with Session(engine) as s:
         q = select(Category).where(Category.user_id == user_id).order_by(Category.name)
         return [CategoryOut.model_validate(c) for c in s.scalars(q)]
+
+
+class CategoryIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    kind: CategoryKind
+    parent_id: uuid.UUID | None = None
+
+
+class CategoryEdit(BaseModel):
+    """Only the fields sent change; `parent_id: null` moves it back to the top."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str | None = None
+    parent_id: uuid.UUID | None = None
+    kind: CategoryKind | None = None  # refused if it differs: a kind is fixed
+
+
+@router.post("/categories", status_code=201, response_model=CategoryOut)
+def create_category(
+    body: CategoryIn, request: Request, user_id: UserId, engine: Db, key: IdempotencyKeyHeader
+) -> JSONResponse:
+    def work(s: Session) -> tuple[int, Any]:
+        cat = categories.create(s, user_id, **body.model_dump())
+        return 201, CategoryOut.model_validate(cat).model_dump(mode="json")
+
+    return idempotent(engine, user_id, key, request_id(request, body), work)
+
+
+@router.post("/categories/{category_id}", response_model=CategoryOut)
+def edit_category(
+    category_id: uuid.UUID,
+    body: CategoryEdit,
+    request: Request,
+    user_id: UserId,
+    engine: Db,
+    key: IdempotencyKeyHeader,
+) -> JSONResponse:
+    def work(s: Session) -> tuple[int, Any]:
+        cat = categories.edit(s, user_id, category_id, **body.model_dump(exclude_unset=True))
+        return 200, CategoryOut.model_validate(cat).model_dump(mode="json")
+
+    return idempotent(engine, user_id, key, request_id(request, body), work)
+
+
+def _add_category_archive_route(action: str) -> None:
+    def post(
+        category_id: uuid.UUID,
+        request: Request,
+        user_id: UserId,
+        engine: Db,
+        key: IdempotencyKeyHeader,
+    ) -> JSONResponse:
+        def work(s: Session) -> tuple[int, Any]:
+            cat = categories.set_archived(s, user_id, category_id, action == "archive")
+            return 200, CategoryOut.model_validate(cat).model_dump(mode="json")
+
+        return idempotent(engine, user_id, key, request_id(request), work)
+
+    router.add_api_route(
+        f"/categories/{{category_id}}/{action}",
+        post,
+        methods=["POST"],
+        response_model=CategoryOut,
+        name=f"{action}_category",
+    )
+
+
+for _action in ("archive", "unarchive"):
+    _add_category_archive_route(_action)
 
 
 # --- Summary --------------------------------------------------------------------------------

@@ -5,6 +5,7 @@ import { type FormEvent, useState } from "react";
 
 import { toMinor } from "./amount";
 import { type Book, post, type Rule } from "./api";
+import { pickable } from "./Categories";
 import { BrandTile, Field, Sheet } from "./ui";
 
 const CADENCES = [
@@ -42,7 +43,7 @@ export function RuleSheet(props: {
   const accounts = book.accounts.filter(
     (a) => a.is_active && ["cash", "bank", "credit_card"].includes(a.subtype),
   );
-  const categories = book.categories.filter((c) => c.kind === "expense" && !c.is_archived);
+  const categories = pickable(book.categories, "expense");
 
   const run = async (path: string, body?: object) => {
     setError(null);
@@ -137,7 +138,7 @@ export function RuleSheet(props: {
               </option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.label}
                 </option>
               ))}
             </select>
