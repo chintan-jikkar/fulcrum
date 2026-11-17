@@ -277,6 +277,7 @@ def create_account(
     if subtype not in CASH_BANK_CARD:
         raise RuleViolation("account", f"{subtype} accounts are not created directly")
     meta = dict(meta or {})
+    _check_details(subtype, meta)
     if subtype is Sub.credit_card:
         limit = meta.get("limit_minor")
         if limit is not None and (type(limit) is not int or not 0 < limit <= MAX_MINOR):
@@ -370,6 +371,36 @@ def unarchive_account(session: Session, user_id: uuid.UUID, account_id: uuid.UUI
     return acct
 
 
+CARD_ONLY = ("due_day", "statement_day", "card_design")
+# The drawn card designs a user can pick (D-072). The web draws each one; keep the two in step.
+CARD_DESIGNS = frozenset(
+    {
+        "midnight", "aurora", "sunset", "waves", "topo", "prism",
+        "terrazzo", "carbon", "marble", "ocean", "grid", "blossom",
+    }
+)  # fmt: skip
+
+
+def _check_details(subtype: AccountSubtype, details: dict[str, Any]) -> None:
+    """The display details an account may carry in meta (D-071). last4 is the most of a card
+    number Parity ever holds: exactly four digits, so a full number cannot be stored by mistake."""
+    for key in CARD_ONLY:
+        if details.get(key) is not None and subtype is not Sub.credit_card:
+            raise RuleViolation("account", f"only a credit card has {key}")
+    for key in ("due_day", "statement_day"):
+        day = details.get(key)
+        if day is not None and (type(day) is not int or not 1 <= day <= 31):
+            raise RuleViolation("account", f"{key} must be a day of the month 1-31, got {day!r}")
+    last4 = details.get("last4")
+    if last4 is not None and not (
+        isinstance(last4, str) and len(last4) == 4 and last4.isascii() and last4.isdigit()
+    ):
+        raise RuleViolation("account", "last4 must be exactly four digits")
+    design = details.get("card_design")
+    if design is not None and design not in CARD_DESIGNS:
+        raise RuleViolation("account", f"card_design is not one of the designs: {design!r}")
+
+
 def edit_account(
     session: Session,
     user_id: uuid.UUID,
@@ -377,12 +408,20 @@ def edit_account(
     *,
     name: str | None = None,
     limit_minor: int | None = None,
+    **details: Any,
 ) -> Account:
-    """Rename a cash, bank or card account, or change a card's limit. Person accounts take their
-    name from the counterparty, so they are not edited here."""
+    """Rename a cash, bank or card account, change a card's limit, or set its display details
+    (last4, due_day, statement_day, card_design). Person accounts take their name from the
+    counterparty, so they are not edited here."""
     acct = _lock_account(session, user_id, account_id, exclusive=True)
     if acct.subtype not in CASH_BANK_CARD:
         raise RuleViolation("account", f"{acct.subtype} accounts are not edited directly")
+    unknown = set(details) - {"last4", *CARD_ONLY}
+    if unknown:
+        raise TypeError(f"unexpected fields {sorted(unknown)}")
+    _check_details(acct.subtype, details)
+    if details:
+        acct.meta = {**acct.meta, **details}  # a new dict so the change is seen
     if name is not None:
         if not name.strip():
             raise RuleViolation("account", "name is empty")

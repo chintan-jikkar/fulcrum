@@ -1,24 +1,12 @@
 // The dashboard. Every number here is a string the API already formatted.
+import { dueText } from "./AccountPage";
 import type { Filter } from "./Activity";
 import type { Account, Book } from "./api";
 import { monthLabel } from "./dates";
-import { BrandTile } from "./ui";
+import { MiniCard } from "./cards";
+import { AccountMark, BrandTile } from "./ui";
 
 const KIND_LABEL: Record<string, string> = { cash: "Cash", bank: "Bank" };
-
-/** The bank's tile if the API recognised the name, else a plain monogram of the first letter. */
-function AccountMark({ account }: { account: Account }) {
-  return (
-    <BrandTile
-      brand={account.brand}
-      fallback={
-        <span className="brand-tile monogram" aria-hidden="true">
-          {account.subtype === "cash" ? "$" : account.name.slice(0, 1)}
-        </span>
-      }
-    />
-  );
-}
 
 /** A utilization ring. The arc length is geometry from basis points, not a money figure. */
 function Ring({ bps }: { bps: number }) {
@@ -45,12 +33,13 @@ function Ring({ bps }: { bps: number }) {
 function CardTile({ card }: { card: Account }) {
   const credit = card.credit;
   return (
-    <article className="tile glass card-tile">
+    <a className="tile glass card-tile" href={`#/account/${card.id}`}>
       {credit?.utilization_bps != null && <Ring bps={credit.utilization_bps} />}
       <div className="tile-body">
         <span className="tile-title">
           <AccountMark account={card} />
           <span className="tile-name">{card.name}</span>
+          {credit?.design && <MiniCard design={credit.design} />}
         </span>
         <span className="num big">{card.balance.display}</span>
         <span className="muted small">
@@ -58,8 +47,13 @@ function CardTile({ card }: { card: Account }) {
             ? `owed · ${credit.available?.display} left of ${credit.limit.display} · ${credit.utilization_display} used`
             : "owed · no limit set"}
         </span>
+        {credit?.days_until_due != null && (
+          <span className={credit.days_until_due <= 3 ? "due soon small" : "due small"}>
+            {dueText(credit.days_until_due)}
+          </span>
+        )}
       </div>
-    </article>
+    </a>
   );
 }
 
@@ -78,6 +72,11 @@ export function Overview({
   const cards = active.filter((a) => a.subtype === "credit_card");
   const spending = summary.month.categories.filter((c) => c.kind === "expense" && !c.parent_id);
   const friends = summary.friends.filter((f) => f.position.minor !== 0);
+  // Cards with something owed and a payment due within a week. In-app for now; the phone app
+  // turns the same figures into notifications (P6).
+  const dueSoon = cards.filter(
+    (c) => c.balance.minor > 0 && c.credit?.days_until_due != null && c.credit.days_until_due <= 7,
+  );
 
   return (
     <>
@@ -91,6 +90,23 @@ export function Overview({
         </div>
       </section>
 
+      {dueSoon.length > 0 && (
+        <section className="due-strip glass" aria-label="Payments due soon">
+          {dueSoon.map((c) => (
+            <a key={c.id} className="due-item" href={`#/account/${c.id}`}>
+              <AccountMark account={c} />
+              <span>
+                <strong>{c.name}</strong>{" "}
+                <span className="due soon">
+                  {dueText(c.credit?.days_until_due ?? 0).toLowerCase()}
+                </span>
+              </span>
+              <span className="num">{c.balance.display} owed</span>
+            </a>
+          ))}
+        </section>
+      )}
+
       <div className="section-head">
         <h2>Cash &amp; bank</h2>
         <button className="link" onClick={onAddAccount}>
@@ -102,7 +118,7 @@ export function Overview({
       )}
       <div className="grid">
         {money.map((a) => (
-          <article key={a.id} className="tile glass">
+          <a key={a.id} className="tile glass" href={`#/account/${a.id}`}>
             <span className="tile-title">
               <AccountMark account={a} />
               <span className="tile-name">{a.name}</span>
@@ -111,7 +127,7 @@ export function Overview({
             <span className={a.balance.minor < 0 ? "num big neg" : "num big"}>
               {a.balance.display}
             </span>
-          </article>
+          </a>
         ))}
       </div>
 

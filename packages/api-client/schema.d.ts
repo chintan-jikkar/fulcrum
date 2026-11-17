@@ -403,17 +403,33 @@ export interface components {
     schemas: {
         /** AccountEdit */
         AccountEdit: {
+            /** Card Design */
+            card_design?: string | null;
+            /** Due Day */
+            due_day?: number | null;
+            /** Last4 */
+            last4?: string | null;
             /** Limit Minor */
             limit_minor?: number | null;
             /** Name */
             name?: string | null;
+            /** Statement Day */
+            statement_day?: number | null;
         };
         /** AccountIn */
         AccountIn: {
+            /** Card Design */
+            card_design?: string | null;
+            /** Due Day */
+            due_day?: number | null;
+            /** Last4 */
+            last4?: string | null;
             /** Limit Minor */
             limit_minor?: number | null;
             /** Name */
             name: string;
+            /** Statement Day */
+            statement_day?: number | null;
             subtype: components["schemas"]["AccountSubtype"];
         };
         /**
@@ -436,6 +452,8 @@ export interface components {
             /** Is Active */
             is_active: boolean;
             kind: components["schemas"]["AccountKind"];
+            /** Last4 */
+            last4: string | null;
             /** Name */
             name: string;
             subtype: components["schemas"]["AccountSubtype"];
@@ -488,7 +506,17 @@ export interface components {
         /** CardCredit */
         CardCredit: {
             available: components["schemas"]["Money"] | null;
+            /** Days Until Due */
+            days_until_due: number | null;
+            /** Design */
+            design: string | null;
+            /** Due Day */
+            due_day: number | null;
             limit: components["schemas"]["Money"] | null;
+            /** Next Due On */
+            next_due_on: string | null;
+            /** Statement Day */
+            statement_day: number | null;
             /** Utilization Bps */
             utilization_bps: number | null;
             /** Utilization Display */
@@ -673,6 +701,8 @@ export interface components {
             /** Account Name */
             account_name: string;
             amount: components["schemas"]["Money"];
+            /** Card Design */
+            card_design: string | null;
             subtype: components["schemas"]["AccountSubtype"];
         };
         /** MerchantTotal */

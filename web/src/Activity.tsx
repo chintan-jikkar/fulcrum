@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { Summary, Txn } from "./api";
 import { dayLabel } from "./dates";
 import { LABELS } from "./templates";
+import { MiniCard } from "./cards";
 import { BrandTile } from "./ui";
 
 /** What the list is narrowed to. Set from the chips here or from a click on the Overview. */
@@ -31,6 +32,8 @@ function Row({ txn, onVoid }: { txn: Txn; onVoid: (id: string) => void }) {
         ? txn.net.display
         : txn.amount.display;
   const details = [route(txn), txn.category?.name, txn.method?.replace("_", " ")].filter(Boolean);
+  // The card that paid, if it has a design: its swatch makes the row recognisable at a glance.
+  const card = txn.legs.find((l) => l.card_design);
 
   return (
     <li className={voided ? "row voided" : "row"}>
@@ -47,7 +50,8 @@ function Row({ txn, onVoid }: { txn: Txn; onVoid: (id: string) => void }) {
           {txn.memo || label}
           {voided && <span className="tag">void</span>}
         </span>
-        <span className="muted small">
+        <span className="muted small row-sub">
+          {card?.card_design && <MiniCard design={card.card_design} title={card.account_name} />}
           {txn.memo ? `${label} · ` : ""}
           {details.join(" · ")}
         </span>

@@ -32,15 +32,47 @@ def _b(
 
 
 BRANDS: tuple[Brand, ...] = (
-    # Banks and card issuers
-    _b("bank", "chase", "Chase", "#117aca", "C"),
-    _b("bank", "bankofamerica", "Bank of America", "#e31837", "BA", "bank of america", "bofa"),
-    _b("bank", "wellsfargo", "Wells Fargo", "#d71e28", "WF"),
-    _b("bank", "citi", "Citi", "#056dae", "Ci", "citi", "citibank"),
-    _b("bank", "capitalone", "Capital One", "#004879", "C1", "capital one"),
-    _b("bank", "amex", "American Express", "#016fd0", "AX", "amex", "american express"),
+    # Banks and card issuers, with card product names that point to their issuer
+    _b("bank", "chase", "Chase", "#117aca", "C", "chase", "sapphire", "freedom"),
+    _b(
+        "bank",
+        "bankofamerica",
+        "Bank of America",
+        "#e31837",
+        "BA",
+        "bank of america",
+        "bofa",
+        "customized cash",
+        "premium rewards",
+    ),
+    _b(
+        "bank",
+        "wellsfargo",
+        "Wells Fargo",
+        "#d71e28",
+        "WF",
+        "wells fargo",
+        "active cash",
+        "autograph",
+    ),
+    _b("bank", "citi", "Citi", "#056dae", "Ci", "citi", "citibank", "double cash", "custom cash"),
+    _b(
+        "bank",
+        "capitalone",
+        "Capital One",
+        "#004879",
+        "C1",
+        "capital one",
+        "venture",
+        "quicksilver",
+        "savor",
+        "savorone",
+    ),
+    _b(
+        "bank", "amex", "American Express", "#016fd0", "AX", "amex", "american express", "blue cash"
+    ),
     _b("bank", "discover", "Discover", "#ff6000", "D"),
-    _b("bank", "usbank", "U.S. Bank", "#0c2074", "US", "us bank", "u s bank"),
+    _b("bank", "usbank", "U.S. Bank", "#0c2074", "US", "us bank", "u s bank", "altitude"),
     _b("bank", "pnc", "PNC", "#ef7622", "P"),
     _b("bank", "td", "TD Bank", "#34a853", "TD", "td", "td bank"),
     _b("bank", "ally", "Ally", "#650360", "A"),
@@ -49,6 +81,9 @@ BRANDS: tuple[Brand, ...] = (
     _b("bank", "marcus", "Marcus", "#1a2b49", "M"),
     _b("bank", "sofi", "SoFi", "#00a2c7", "So"),
     _b("bank", "navyfederal", "Navy Federal", "#003a70", "NF", "navy federal"),
+    # Card networks last: an issuer named in the same card name wins (first match).
+    _b("bank", "visa", "Visa", "#1a1f71", "V"),
+    _b("bank", "mastercard", "Mastercard", "#eb001b", "MC"),
     # Shops and groceries
     _b("merchant", "target", "Target", "#cc0000", "◎"),
     _b("merchant", "walmart", "Walmart", "#0071ce", "W"),

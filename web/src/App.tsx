@@ -1,6 +1,7 @@
 // The shell: navigation, the four screens, and the two sheets for adding things.
 import { useCallback, useEffect, useState } from "react";
 
+import { AccountPage } from "./AccountPage";
 import { Activity, type Filter } from "./Activity";
 import { AddAccount } from "./AddAccount";
 import { AddTransaction, type Preset } from "./AddTransaction";
@@ -17,6 +18,9 @@ const TABS: { id: Tab; label: string; glyph: string }[] = [
   { id: "settings", label: "Settings", glyph: "⚙" },
 ];
 
+/** The account id in "#/account/<id>", or null on the tab screens. */
+const accountInHash = () => /^#\/account\/([\w-]+)$/.exec(window.location.hash)?.[1] ?? null;
+
 export function App() {
   // useState gives a component memory. Calling the setter redraws the component.
   const [tab, setTab] = useState<Tab>("overview");
@@ -26,6 +30,22 @@ export function App() {
   const [adding, setAdding] = useState<Preset | null>(null);
   const [addingAccount, setAddingAccount] = useState(false);
   const [filter, setFilter] = useState<Filter>(null);
+  // An account page is a link (#/account/<id>), so the browser's Back button and "open in new
+  // tab" both work. The hash is the single source of truth; this state just follows it.
+  const [accountId, setAccountId] = useState(accountInHash);
+  useEffect(() => {
+    const follow = () => {
+      setAccountId(accountInHash());
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener("hashchange", follow);
+    return () => window.removeEventListener("hashchange", follow);
+  }, []);
+
+  const openTab = (id: Tab) => {
+    if (window.location.hash) window.location.hash = ""; // leave an account page
+    setTab(id);
+  };
 
   // Every figure comes from the server, so after any change the whole book is fetched again
   // rather than patched up here. useCallback keeps `reload` the same function between redraws.
@@ -62,9 +82,9 @@ export function App() {
         {TABS.map((t) => (
           <button
             key={t.id}
-            className={tab === t.id ? "nav-item active" : "nav-item"}
-            aria-current={tab === t.id ? "page" : undefined}
-            onClick={() => setTab(t.id)}
+            className={tab === t.id && !accountId ? "nav-item active" : "nav-item"}
+            aria-current={tab === t.id && !accountId ? "page" : undefined}
+            onClick={() => openTab(t.id)}
           >
             <span className="nav-glyph" aria-hidden="true">
               {t.glyph}
@@ -81,7 +101,16 @@ export function App() {
           </div>
         )}
         {!book && !error && <p className="muted">Loading…</p>}
-        {book && tab === "overview" && (
+        {book && accountId && (
+          <AccountPage
+            key={accountId}
+            book={book}
+            id={accountId}
+            onChanged={reload}
+            onVoid={voidTxn}
+          />
+        )}
+        {book && !accountId && tab === "overview" && (
           <Overview
             book={book}
             onAddAccount={() => setAddingAccount(true)}
@@ -91,7 +120,7 @@ export function App() {
             }}
           />
         )}
-        {book && tab === "activity" && (
+        {book && !accountId && tab === "activity" && (
           <>
             <h1>Activity</h1>
             <Activity
@@ -104,8 +133,10 @@ export function App() {
             />
           </>
         )}
-        {book && tab === "friends" && <Friends book={book} onAdd={setAdding} onVoid={voidTxn} />}
-        {book && tab === "settings" && <Settings book={book} onChanged={reload} />}
+        {book && !accountId && tab === "friends" && (
+          <Friends book={book} onAdd={setAdding} onVoid={voidTxn} />
+        )}
+        {book && !accountId && tab === "settings" && <Settings book={book} onChanged={reload} />}
       </main>
 
       {book && (

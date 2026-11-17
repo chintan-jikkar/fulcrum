@@ -4,7 +4,7 @@ import { type FormEvent, useState } from "react";
 import { toMinor } from "./amount";
 import { type Account, type Book, post } from "./api";
 import { loadMode, loadTheme, type Mode, PRESETS, saveMode, saveTheme, type Theme } from "./theme";
-import { Field } from "./ui";
+import { AccountMark, Field } from "./ui";
 
 const KIND_LABEL: Record<string, string> = {
   cash: "Cash",
@@ -84,8 +84,11 @@ function AccountRow({ account, onChanged }: { account: Account; onChanged: () =>
 
   return (
     <div className={account.is_active ? "acct-row" : "acct-row archived"}>
+      <AccountMark account={account} />
       <div className="tile-body">
-        <span className="tile-name">{account.name}</span>
+        <a className="tile-name plain-link" href={`#/account/${account.id}`}>
+          {account.name}
+        </a>
         <span className="muted small">
           {KIND_LABEL[account.subtype]} · <span className="num">{account.balance.display}</span>
           {isCard && account.credit?.limit && ` · limit ${account.credit.limit.display}`}

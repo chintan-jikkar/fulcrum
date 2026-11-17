@@ -46,6 +46,8 @@ DOMAINS: dict[str, str] = {
     "marcus": "marcus.com",
     "sofi": "sofi.com",
     "navyfederal": "navyfederal.org",
+    "visa": "visa.com",
+    "mastercard": "mastercard.com",
     "target": "target.com",
     "walmart": "walmart.com",
     "costco": "costco.com",

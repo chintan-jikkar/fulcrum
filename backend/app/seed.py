@@ -40,7 +40,7 @@ def seed(s: Session, user_id: uuid.UUID) -> bool:
     rows = s.execute(select(Category.name, Category.id).where(Category.user_id == user_id))
     cat: dict[str, uuid.UUID] = {name: category_id for name, category_id in rows}
 
-    def account(name: str, subtype: AccountSubtype, opening: int, **meta: int) -> uuid.UUID:
+    def account(name: str, subtype: AccountSubtype, opening: int, **meta: int | str) -> uuid.UUID:
         acct = ledger.create_account(s, user_id, name=name, subtype=subtype, meta=meta)
         if opening:
             ledger.opening(
@@ -51,8 +51,26 @@ def seed(s: Session, user_id: uuid.UUID) -> bool:
     checking = account("Harbor Checking", Sub.bank, 240000)
     savings = account("Harbor Savings", Sub.bank, 500000)
     wallet = account("Wallet", Sub.cash, 12000)
-    juniper = account("Juniper Card", Sub.credit_card, 31040, limit_minor=500000)
-    atlas = account("Atlas Rewards", Sub.credit_card, 0, limit_minor=200000)
+    # Made-up details: 0000-style last digits and arbitrary days and designs (no real cards).
+    juniper = account(
+        "Juniper Card",
+        Sub.credit_card,
+        31040,
+        limit_minor=500000,
+        due_day=ago(-4).day,
+        statement_day=ago(21).day,
+        last4="0001",
+        card_design="ocean",
+    )
+    atlas = account(
+        "Atlas Rewards",
+        Sub.credit_card,
+        0,
+        limit_minor=200000,
+        due_day=ago(-19).day,
+        last4="0002",
+        card_design="sunset",
+    )
     sam = ledger.create_counterparty(s, user_id, name="Sam").id
     priya = ledger.create_counterparty(s, user_id, name="Priya").id
 

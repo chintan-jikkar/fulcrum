@@ -5,6 +5,7 @@ Read-only; the write path is ledger.py. Every figure replays postings of non-voi
 (D-013) and count transactions with occurred_on <= as_of. All arithmetic is on Python ints.
 """
 
+import calendar
 import uuid
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -54,6 +55,19 @@ class PeriodTotals:
 def today(session: Session, user_id: uuid.UUID) -> date:
     tz = session.scalars(select(User.timezone).where(User.id == user_id)).one()
     return datetime.now(ZoneInfo(tz)).date()
+
+
+def next_due(today: date, due_day: int) -> date:
+    """The next date a card is due, today included. A month shorter than due_day uses its last
+    day (due on the 31st means Feb 28 in February)."""
+
+    def in_month(year: int, month: int) -> date:
+        return date(year, month, min(due_day, calendar.monthrange(year, month)[1]))
+
+    this = in_month(today.year, today.month)
+    if this >= today:
+        return this
+    return in_month(today.year + today.month // 12, today.month % 12 + 1)
 
 
 def _as_of(session: Session, user_id: uuid.UUID, as_of: date | None) -> date:

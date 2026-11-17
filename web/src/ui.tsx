@@ -1,7 +1,7 @@
 // Small shared pieces: the modal sheet and a labelled form field.
 import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 
-import { BASE, type Brand } from "./api";
+import { type Account, BASE, type Brand } from "./api";
 import { inkOn, useIsDark } from "./theme";
 
 /** A sheet over the page. Closes on Escape or ✕, not on a stray click outside: that would
@@ -70,5 +70,19 @@ export function BrandTile(props: { brand: Brand | null; fallback: ReactNode; tit
         onError={() => setLoaded(false)}
       />
     </span>
+  );
+}
+
+/** The bank's tile if the API recognised the name, else a plain monogram of the first letter. */
+export function AccountMark({ account }: { account: Account }) {
+  return (
+    <BrandTile
+      brand={account.brand}
+      fallback={
+        <span className="brand-tile monogram" aria-hidden="true">
+          {account.subtype === "cash" ? "$" : account.name.slice(0, 1)}
+        </span>
+      }
+    />
   );
 }

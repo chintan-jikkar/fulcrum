@@ -68,3 +68,35 @@ def test_every_brand_has_a_colour_and_a_short_mark() -> None:
     for b in BRANDS:
         assert b.color.startswith("#") and len(b.color) == 7, b.key
         assert 1 <= len(b.mark) <= 3, b.key
+
+
+@pytest.mark.parametrize(
+    ("card", "key"),
+    [
+        ("Sapphire Preferred", "chase"),
+        ("Freedom Unlimited", "chase"),
+        ("Venture X", "capitalone"),
+        ("Quicksilver", "capitalone"),
+        ("SavorOne", "capitalone"),
+        ("Blue Cash Everyday", "amex"),
+        ("Double Cash", "citi"),
+        ("Custom Cash", "citi"),
+        ("Active Cash", "wellsfargo"),
+        ("Autograph", "wellsfargo"),
+        ("Customized Cash Rewards", "bankofamerica"),
+        ("Altitude Go", "usbank"),
+        ("Discover it", "discover"),
+        # The issuer wins over the network; the network is the fallback.
+        ("Chase Sapphire Visa", "chase"),
+        ("My Visa", "visa"),
+        ("Work Mastercard", "mastercard"),
+    ],
+)
+def test_bank_of_knows_card_products_and_networks(card: str, key: str) -> None:
+    brand = bank_of(card)
+    assert brand is not None and brand.key == key
+
+
+def test_card_words_are_not_merchants() -> None:
+    assert merchant_of("Visa") is None
+    assert merchant_of("Freedom Tower tickets") is None

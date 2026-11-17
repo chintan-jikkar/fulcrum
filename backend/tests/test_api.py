@@ -123,6 +123,12 @@ def test_every_template_over_http_gives_the_hand_calculated_figures(me: Caller) 
         "available": {"minor": 499000, "display": "$4,990.00"},
         "utilization_bps": 20,
         "utilization_display": "0.20%",
+        # No due day or colour was set for this card (test_cards covers them).
+        "due_day": None,
+        "statement_day": None,
+        "next_due_on": None,
+        "days_until_due": None,
+        "design": None,
     }
 
     s = me.get("/summary")

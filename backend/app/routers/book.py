@@ -45,6 +45,11 @@ class CardCredit(BaseModel):
     available: Money | None
     utilization_bps: int | None
     utilization_display: str | None
+    due_day: int | None
+    statement_day: int | None
+    next_due_on: date | None  # today in the user's timezone counts as not yet passed
+    days_until_due: int | None  # 0 means due today
+    design: str | None  # the drawn design the user picked for this card (D-072)
 
 
 class AccountOut(BaseModel):
@@ -55,16 +60,27 @@ class AccountOut(BaseModel):
     is_active: bool
     counterparty_id: uuid.UUID | None
     balance: Money  # an asset's balance, or what a liability owes (§3.9)
+    last4: str | None  # the only part of a card or account number Parity keeps (D-071)
     credit: CardCredit | None  # active credit cards only
     brand: BrandOut | None  # a known bank in the name (D-066)
 
 
-class AccountIn(BaseModel):
+class _Details(BaseModel):
+    """Display details (D-071). extra="forbid" means a full card number or security code sent
+    by mistake is refused outright, never stored."""
+
     model_config = ConfigDict(extra="forbid")
 
+    limit_minor: StrictInt | None = None
+    last4: str | None = None
+    due_day: StrictInt | None = None
+    statement_day: StrictInt | None = None
+    card_design: str | None = None
+
+
+class AccountIn(_Details):
     name: str
     subtype: AccountSubtype
-    limit_minor: StrictInt | None = None
 
 
 def _opt(minor: int | None) -> Money | None:
@@ -75,7 +91,9 @@ def _pct(bps: int | None) -> str | None:
     return None if bps is None else percent(bps)
 
 
-def _account_out(acct: Account, raw: int, credit: figures.Credit | None) -> AccountOut:
+def _account_out(acct: Account, raw: int, credit: figures.Credit | None, today: date) -> AccountOut:
+    due_day = acct.meta.get("due_day")
+    due = None if due_day is None else figures.next_due(today, due_day)
     return AccountOut(
         id=acct.id,
         name=acct.name,
@@ -85,6 +103,7 @@ def _account_out(acct: Account, raw: int, credit: figures.Credit | None) -> Acco
         counterparty_id=acct.counterparty_id,
         brand=brand_out(bank_of(acct.name)) if acct.counterparty_id is None else None,
         balance=money(-raw if acct.kind is AccountKind.LIABILITY else raw),
+        last4=acct.meta.get("last4"),
         credit=None
         if credit is None
         else CardCredit(
@@ -92,6 +111,11 @@ def _account_out(acct: Account, raw: int, credit: figures.Credit | None) -> Acco
             available=_opt(credit.available),
             utilization_bps=credit.utilization_bps,
             utilization_display=_pct(credit.utilization_bps),
+            due_day=due_day,
+            statement_day=acct.meta.get("statement_day"),
+            next_due_on=due,
+            days_until_due=None if due is None else (due - today).days,
+            design=acct.meta.get("card_design"),
         ),
     )
 
@@ -106,7 +130,8 @@ def list_accounts(user_id: UserId, engine: Db) -> list[AccountOut]:
             select(Account).where(Account.user_id == user_id, Account.kind != AccountKind.EXTERNAL)
         ).all()
         accounts = sorted(accounts, key=lambda a: (SUBTYPE_ORDER.index(a.subtype), a.name))
-        return [_account_out(a, raw[a.id], cards.get(a.id)) for a in accounts]
+        today = figures.today(s, user_id)
+        return [_account_out(a, raw[a.id], cards.get(a.id), today) for a in accounts]
 
 
 @router.post("/accounts", status_code=201, response_model=AccountOut)
@@ -114,25 +139,25 @@ def create_account(
     body: AccountIn, request: Request, user_id: UserId, engine: Db, key: IdempotencyKeyHeader
 ) -> JSONResponse:
     def work(s: Session) -> tuple[int, Any]:
-        meta = {} if body.limit_minor is None else {"limit_minor": body.limit_minor}
+        meta = body.model_dump(exclude_none=True, exclude={"name", "subtype"})
         acct = ledger.create_account(s, user_id, name=body.name, subtype=body.subtype, meta=meta)
         cards, _ = figures.credit(s, user_id)
-        return 201, _account_out(acct, 0, cards.get(acct.id)).model_dump(mode="json")
+        out = _account_out(acct, 0, cards.get(acct.id), figures.today(s, user_id))
+        return 201, out.model_dump(mode="json")
 
     return idempotent(engine, user_id, key, request_id(request, body), work)
 
 
-class AccountEdit(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class AccountEdit(_Details):
     name: str | None = None
-    limit_minor: StrictInt | None = None
 
 
 def _account_now(s: Session, user_id: uuid.UUID, acct: Account) -> dict[str, Any]:
     cards, _ = figures.credit(s, user_id)
     raw = figures.balances(s, user_id)[acct.id]
-    return _account_out(acct, raw, cards.get(acct.id)).model_dump(mode="json")
+    return _account_out(acct, raw, cards.get(acct.id), figures.today(s, user_id)).model_dump(
+        mode="json"
+    )
 
 
 @router.post("/accounts/{account_id}", response_model=AccountOut)

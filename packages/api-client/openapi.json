@@ -4,6 +4,39 @@
       "AccountEdit": {
         "additionalProperties": false,
         "properties": {
+          "card_design": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Design"
+          },
+          "due_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Day"
+          },
+          "last4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last4"
+          },
           "limit_minor": {
             "anyOf": [
               {
@@ -25,6 +58,17 @@
               }
             ],
             "title": "Name"
+          },
+          "statement_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Day"
           }
         },
         "title": "AccountEdit",
@@ -33,6 +77,39 @@
       "AccountIn": {
         "additionalProperties": false,
         "properties": {
+          "card_design": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Design"
+          },
+          "due_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Day"
+          },
+          "last4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last4"
+          },
           "limit_minor": {
             "anyOf": [
               {
@@ -47,6 +124,17 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "statement_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Day"
           },
           "subtype": {
             "$ref": "#/components/schemas/AccountSubtype"
@@ -117,6 +205,17 @@
           "kind": {
             "$ref": "#/components/schemas/AccountKind"
           },
+          "last4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last4"
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -133,6 +232,7 @@
           "is_active",
           "counterparty_id",
           "balance",
+          "last4",
           "credit",
           "brand"
         ],
@@ -240,6 +340,39 @@
               }
             ]
           },
+          "days_until_due": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Until Due"
+          },
+          "design": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Design"
+          },
+          "due_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Day"
+          },
           "limit": {
             "anyOf": [
               {
@@ -249,6 +382,29 @@
                 "type": "null"
               }
             ]
+          },
+          "next_due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Due On"
+          },
+          "statement_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Day"
           },
           "utilization_bps": {
             "anyOf": [
@@ -277,7 +433,12 @@
           "limit",
           "available",
           "utilization_bps",
-          "utilization_display"
+          "utilization_display",
+          "due_day",
+          "statement_day",
+          "next_due_on",
+          "days_until_due",
+          "design"
         ],
         "title": "CardCredit",
         "type": "object"
@@ -682,6 +843,17 @@
           "amount": {
             "$ref": "#/components/schemas/Money"
           },
+          "card_design": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Design"
+          },
           "subtype": {
             "$ref": "#/components/schemas/AccountSubtype"
           }
@@ -690,7 +862,8 @@
           "account_id",
           "account_name",
           "subtype",
-          "amount"
+          "amount",
+          "card_design"
         ],
         "title": "Leg",
         "type": "object"

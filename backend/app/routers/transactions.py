@@ -176,6 +176,7 @@ class Leg(BaseModel):
     account_name: str
     subtype: AccountSubtype
     amount: Money  # signed; positive is a debit
+    card_design: str | None  # a card's picked design, so a row shows which card paid (D-072)
 
 
 class TransactionRow(BaseModel):
@@ -233,7 +234,13 @@ def list_transactions(user_id: UserId, engine: Db, limit: int = 200) -> list[Tra
                 amount=money(max(n for _, n in legs[t.id])),
                 net=money(sum(n for a, n in legs[t.id] if a.kind is not AccountKind.EXTERNAL)),
                 legs=[
-                    Leg(account_id=a.id, account_name=a.name, subtype=a.subtype, amount=money(n))
+                    Leg(
+                        account_id=a.id,
+                        account_name=a.name,
+                        subtype=a.subtype,
+                        amount=money(n),
+                        card_design=a.meta.get("card_design"),
+                    )
                     for a, n in legs[t.id]
                 ],
             )
