@@ -48,6 +48,18 @@
             ],
             "title": "Limit Minor"
           },
+          "linked_bank_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linked Bank Id"
+          },
           "name": {
             "anyOf": [
               {
@@ -120,6 +132,18 @@
               }
             ],
             "title": "Limit Minor"
+          },
+          "linked_bank_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linked Bank Id"
           },
           "name": {
             "title": "Name",
@@ -383,6 +407,29 @@
               }
             ]
           },
+          "linked_bank_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linked Bank Id"
+          },
+          "linked_bank_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linked Bank Name"
+          },
           "next_due_on": {
             "anyOf": [
               {
@@ -438,7 +485,9 @@
           "statement_day",
           "next_due_on",
           "days_until_due",
-          "design"
+          "design",
+          "linked_bank_id",
+          "linked_bank_name"
         ],
         "title": "CardCredit",
         "type": "object"
@@ -692,6 +741,90 @@
           "utilization_display"
         ],
         "title": "CreditSummary",
+        "type": "object"
+      },
+      "FriendLedger": {
+        "properties": {
+          "counterparty_id": {
+            "format": "uuid",
+            "title": "Counterparty Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "position": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/FriendLedgerRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "counterparty_id",
+          "name",
+          "position",
+          "rows"
+        ],
+        "title": "FriendLedger",
+        "type": "object"
+      },
+      "FriendLedgerRow": {
+        "properties": {
+          "change": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "memo": {
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "position_after": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "template": {
+            "$ref": "#/components/schemas/TransactionTemplate"
+          },
+          "transaction_id": {
+            "format": "uuid",
+            "title": "Transaction Id",
+            "type": "string"
+          },
+          "voided": {
+            "title": "Voided",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "transaction_id",
+          "occurred_on",
+          "template",
+          "memo",
+          "method",
+          "voided",
+          "change",
+          "position_after"
+        ],
+        "title": "FriendLedgerRow",
         "type": "object"
       },
       "FriendOutIn": {
@@ -1901,6 +2034,50 @@
           }
         },
         "summary": "Create Counterparty",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/counterparties/{counterparty_id}/ledger": {
+      "get": {
+        "description": "One person's history with a running position: the friends ledger screen (P3).",
+        "operationId": "friend_ledger_counterparties__counterparty_id__ledger_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "counterparty_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Counterparty Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FriendLedger"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Friend Ledger",
         "tags": [
           "book"
         ]

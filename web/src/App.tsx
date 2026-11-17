@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { AccountPage } from "./AccountPage";
 import { Activity, type Filter } from "./Activity";
-import { AddAccount } from "./AddAccount";
+import { AddAccount, type Kind } from "./AddAccount";
 import { AddTransaction, type Preset } from "./AddTransaction";
 import { type Book, loadBook, post } from "./api";
 import { Friends } from "./Friends";
@@ -28,7 +28,8 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   // null means the sheet is closed; an object (even empty) means open, maybe pre-filled.
   const [adding, setAdding] = useState<Preset | null>(null);
-  const [addingAccount, setAddingAccount] = useState(false);
+  // null: closed; otherwise the kind of account the sheet opens as.
+  const [addingAccount, setAddingAccount] = useState<Kind | null>(null);
   const [filter, setFilter] = useState<Filter>(null);
   // An account page is a link (#/account/<id>), so the browser's Back button and "open in new
   // tab" both work. The hash is the single source of truth; this state just follows it.
@@ -108,12 +109,13 @@ export function App() {
             id={accountId}
             onChanged={reload}
             onVoid={voidTxn}
+            onAdd={setAdding}
           />
         )}
         {book && !accountId && tab === "overview" && (
           <Overview
             book={book}
-            onAddAccount={() => setAddingAccount(true)}
+            onAddAccount={setAddingAccount}
             onShow={(f) => {
               setFilter(f);
               setTab("activity");
@@ -134,9 +136,11 @@ export function App() {
           </>
         )}
         {book && !accountId && tab === "friends" && (
-          <Friends book={book} onAdd={setAdding} onVoid={voidTxn} />
+          <Friends book={book} onAdd={setAdding} />
         )}
-        {book && !accountId && tab === "settings" && <Settings book={book} onChanged={reload} />}
+        {book && !accountId && tab === "settings" && (
+          <Settings book={book} onChanged={reload} onAddAccount={setAddingAccount} />
+        )}
       </main>
 
       {book && (
@@ -158,9 +162,11 @@ export function App() {
       {book && addingAccount && (
         <AddAccount
           today={book.summary.as_of}
-          onClose={() => setAddingAccount(false)}
+          kind={addingAccount}
+          banks={book.accounts.filter((a) => a.is_active && a.subtype === "bank")}
+          onClose={() => setAddingAccount(null)}
           onDone={() => {
-            setAddingAccount(false);
+            setAddingAccount(null);
             reload();
           }}
         />

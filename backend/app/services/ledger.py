@@ -282,16 +282,8 @@ def create_account(
         limit = meta.get("limit_minor")
         if limit is not None and (type(limit) is not int or not 0 < limit <= MAX_MINOR):
             raise RuleViolation("account", f"limit_minor must be positive cents, got {limit!r}")
-        bank_id = meta.get("linked_bank_id")
-        if bank_id is not None:
-            try:
-                bank_uuid = uuid.UUID(str(bank_id))
-            except ValueError:
-                raise RuleViolation(
-                    "account", f"linked_bank_id is not an id: {bank_id!r}"
-                ) from None
-            if _lock_account(session, user_id, bank_uuid).subtype is not Sub.bank:
-                raise RuleViolation("account", "linked_bank_id must be a bank account")
+        if meta.get("linked_bank_id") is not None:
+            meta["linked_bank_id"] = _paying_bank(session, user_id, meta["linked_bank_id"])
 
     acct = Account(user_id=user_id, name=name, kind=KIND_OF[subtype], subtype=subtype, meta=meta)
     session.add(acct)
@@ -371,7 +363,21 @@ def unarchive_account(session: Session, user_id: uuid.UUID, account_id: uuid.UUI
     return acct
 
 
-CARD_ONLY = ("due_day", "statement_day", "card_design")
+CARD_ONLY = ("due_day", "statement_day", "card_design", "linked_bank_id")
+
+
+def _paying_bank(session: Session, user_id: uuid.UUID, bank_id: object) -> str:
+    """The bank account that pays a card off (§3.3 linked_bank_id), as stored in meta. Another
+    user's account is NotFound, like any id that does not exist (§7)."""
+    try:
+        bank_uuid = uuid.UUID(str(bank_id))
+    except ValueError:
+        raise RuleViolation("account", f"linked_bank_id is not an id: {bank_id!r}") from None
+    if _lock_account(session, user_id, bank_uuid).subtype is not Sub.bank:
+        raise RuleViolation("account", "linked_bank_id must be a bank account")
+    return str(bank_uuid)
+
+
 # The drawn card designs a user can pick (D-072). The web draws each one; keep the two in step.
 CARD_DESIGNS = frozenset(
     {
@@ -419,9 +425,9 @@ def edit_account(
     limit_minor: int | None = None,
     **details: Any,
 ) -> Account:
-    """Rename a cash, bank or card account, change a card's limit, or set its display details
-    (last4, due_day, statement_day, card_design). Person accounts take their name from the
-    counterparty, so they are not edited here."""
+    """Rename a cash, bank or card account, change a card's limit, or set its details (last4,
+    due_day, statement_day, card_design, linked_bank_id). Person accounts take their name from
+    the counterparty, so they are not edited here."""
     acct = _lock_account(session, user_id, account_id, exclusive=True)
     if acct.subtype not in CASH_BANK_CARD:
         raise RuleViolation("account", f"{acct.subtype} accounts are not edited directly")
@@ -429,6 +435,8 @@ def edit_account(
     if unknown:
         raise TypeError(f"unexpected fields {sorted(unknown)}")
     _check_details(acct.subtype, details)
+    if details.get("linked_bank_id") is not None:
+        details["linked_bank_id"] = _paying_bank(session, user_id, details["linked_bank_id"])
     if details:
         acct.meta = {**acct.meta, **details}  # a new dict so the change is seen
     if name is not None:

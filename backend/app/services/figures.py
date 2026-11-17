@@ -25,7 +25,7 @@ from app.models.ledger import (
     Transaction,
     User,
 )
-from app.services.ledger import RuleViolation
+from app.services.ledger import NotFound, RuleViolation
 
 Sub = AccountSubtype
 
@@ -237,3 +237,47 @@ def friend_positions(
         if acct.counterparty_id is not None:
             positions[acct.counterparty_id] += raw
     return positions
+
+
+@dataclass(frozen=True)
+class FriendRow:
+    """One transaction with a person: how it moved the position, and the position after it."""
+
+    txn: Transaction
+    change: int  # raw on the person's two accounts; positive: they owe you more
+    position_after: int
+
+
+def friend_ledger(
+    session: Session, user_id: uuid.UUID, counterparty_id: uuid.UUID
+) -> list[FriendRow]:
+    """Every transaction touching a person's receivable or payable, oldest first, with a running
+    position (§5 friend position, replayed). A voided one stays listed but moves nothing.
+    Another user's person is NotFound (§7).
+    ponytail: replays the whole history per request; fine for one person's handful of rows."""
+    person = session.scalars(
+        select(Counterparty.id).where(
+            Counterparty.id == counterparty_id, Counterparty.user_id == user_id
+        )
+    ).one_or_none()
+    if person is None:
+        raise NotFound(f"counterparty {counterparty_id}")
+    q = (
+        select(Transaction, func.sum(Posting.amount_minor))
+        .join(Posting, Posting.transaction_id == Transaction.id)
+        .join(Account, Account.id == Posting.account_id)
+        .where(
+            Transaction.user_id == user_id,
+            Posting.user_id == user_id,
+            Account.counterparty_id == counterparty_id,
+        )
+        .group_by(Transaction.id)
+        .order_by(Transaction.occurred_on, Transaction.created_at)
+    )
+    position, rows = 0, []
+    for txn, total in session.execute(q):
+        change = int(total)  # SUM over bigint comes back as Decimal; money stays int (§6)
+        if txn.voided_at is None:
+            position += change
+        rows.append(FriendRow(txn=txn, change=change, position_after=position))
+    return rows

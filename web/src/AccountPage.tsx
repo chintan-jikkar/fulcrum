@@ -3,6 +3,7 @@
 import { type FormEvent, useState } from "react";
 
 import { Activity } from "./Activity";
+import type { Preset } from "./AddTransaction";
 import { toMinor } from "./amount";
 import { type Account, type Book, post } from "./api";
 import { CardArt, COLOURS, DESIGNS, MiniCard, NEUTRAL_CARD } from "./cards";
@@ -19,6 +20,7 @@ export function dueText(days: number): string {
  * stays until it is changed here again. */
 function Details(props: {
   account: Account;
+  banks: Account[]; // the banks that could pay this card off
   onPreview: (design: string) => void; // the card at the top shows the design being picked
   onDone: () => void;
   onChanged: () => void;
@@ -31,6 +33,7 @@ function Details(props: {
   const [due, setDue] = useState(credit?.due_day?.toString() ?? "");
   const [statement, setStatement] = useState(credit?.statement_day?.toString() ?? "");
   const [design, setDesign] = useState(credit?.design ?? "");
+  const [paidFrom, setPaidFrom] = useState(credit?.linked_bank_id ?? "");
   // Picking a colour or a design shows it on the card at the top before it is saved.
   const pick = (value: string) => {
     setDesign(value);
@@ -53,6 +56,7 @@ function Details(props: {
       if (statement && Number(statement) !== credit?.statement_day)
         body.statement_day = Number(statement);
       if (design && design !== credit?.design) body.card_design = design;
+      if (paidFrom && paidFrom !== credit?.linked_bank_id) body.linked_bank_id = paidFrom;
     }
     if (Object.keys(body).length === 0) return props.onDone();
     try {
@@ -146,6 +150,20 @@ function Details(props: {
         )}
       </div>
       {isCard && (
+        <Field label="Paid off from">
+          <select value={paidFrom} onChange={(e) => setPaidFrom(e.target.value)}>
+            <option value="" disabled>
+              Choose a bank account…
+            </option>
+            {props.banks.map((bank) => (
+              <option key={bank.id} value={bank.id}>
+                {bank.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
+      {isCard && (
         <div className="pair">
           <Field label="Payment due day">
             <input
@@ -188,6 +206,7 @@ export function AccountPage(props: {
   id: string;
   onChanged: () => void;
   onVoid: (id: string) => void;
+  onAdd: (preset: Preset) => void; // opens the add-transaction sheet, e.g. to pay this card
 }) {
   const { book } = props;
   const account = book.accounts.find((a) => a.id === props.id);
@@ -288,7 +307,26 @@ export function AccountPage(props: {
               {credit.statement_day && (
                 <span className="muted small">Statement closes on day {credit.statement_day}</span>
               )}
+              <span className="muted small">
+                {credit.linked_bank_name
+                  ? `Paid off from ${credit.linked_bank_name}`
+                  : "No bank set to pay it off. Add one with ✎."}
+              </span>
             </div>
+            {account.is_active && (
+              <button
+                className="primary"
+                onClick={() =>
+                  props.onAdd({
+                    template: "card_payment",
+                    a: account.id,
+                    b: credit.linked_bank_id ?? undefined,
+                  })
+                }
+              >
+                Pay card
+              </button>
+            )}
           </section>
         )}
       </div>
@@ -297,6 +335,7 @@ export function AccountPage(props: {
         <Details
           key={account.id}
           account={account}
+          banks={book.accounts.filter((a) => a.is_active && a.subtype === "bank")}
           onPreview={setPreview}
           onDone={close}
           onChanged={props.onChanged}

@@ -129,6 +129,8 @@ def test_every_template_over_http_gives_the_hand_calculated_figures(me: Caller) 
         "next_due_on": None,
         "days_until_due": None,
         "design": None,
+        "linked_bank_id": None,
+        "linked_bank_name": None,
     }
 
     s = me.get("/summary")

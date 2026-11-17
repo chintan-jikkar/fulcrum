@@ -6,8 +6,9 @@ import { type Book, type Person, type Template, post } from "./api";
 import { TEMPLATES } from "./templates";
 import { Field, Sheet } from "./ui";
 
-/** What the sheet opens with. `person: "new"` opens it ready to name a new person. */
-export type Preset = { template?: Template; person?: string };
+/** What the sheet opens with. `person: "new"` opens it ready to name a new person. `a` and `b`
+ * pre-pick the template's two accounts (e.g. a card and the bank that pays it). */
+export type Preset = { template?: Template; person?: string; a?: string; b?: string };
 
 const METHODS = [
   ["", "Not recorded"],
@@ -28,8 +29,8 @@ export function AddTransaction(props: {
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(book.summary.as_of); // the server's "today" for this user
   const [memo, setMemo] = useState("");
-  const [a, setA] = useState("");
-  const [b, setB] = useState("");
+  const [a, setA] = useState(props.preset.a ?? "");
+  const [b, setB] = useState(props.preset.b ?? "");
   const [category, setCategory] = useState("");
   const [person, setPerson] = useState(props.preset.person ?? "");
   const [newPerson, setNewPerson] = useState("");
@@ -49,6 +50,13 @@ export function AddTransaction(props: {
     setB("");
     setCategory("");
     setError(null);
+  };
+
+  const pickA = (id: string) => {
+    setA(id);
+    // Paying a card: start from the bank the card is tied to (D-075). It can still be changed.
+    const linked = book.accounts.find((acct) => acct.id === id)?.credit?.linked_bank_id;
+    if (templateId === "card_payment" && linked) setB(linked);
   };
 
   const save = async (event: FormEvent) => {
@@ -135,7 +143,7 @@ export function AddTransaction(props: {
         )}
 
         <Field label={spec.a.label}>
-          <select value={a} onChange={(e) => setA(e.target.value)} required>
+          <select value={a} onChange={(e) => pickA(e.target.value)} required>
             <option value="" disabled>
               Choose…
             </option>

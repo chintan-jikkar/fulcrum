@@ -5,11 +5,20 @@ import { toMinor } from "./amount";
 import { type Account, post } from "./api";
 import { Field, Sheet } from "./ui";
 
-type Kind = "bank" | "cash" | "credit_card";
+export type Kind = "bank" | "cash" | "credit_card";
 
-export function AddAccount(props: { today: string; onClose: () => void; onDone: () => void }) {
+export function AddAccount(props: {
+  today: string;
+  kind: Kind; // what the sheet opens as; "+ Add card" opens it as a credit card
+  banks: Account[]; // the user's bank accounts, one of which can pay a new card off
+  onClose: () => void;
+  onDone: () => void;
+}) {
   const [name, setName] = useState("");
-  const [kind, setKind] = useState<Kind>("bank");
+  const [kind, setKind] = useState<Kind>(props.kind);
+  // The bank that pays the card off (D-075). The only bank is picked for you.
+  const [paidFrom, setPaidFrom] = useState(props.banks.length === 1 ? props.banks[0]!.id : "");
+  const [dueDay, setDueDay] = useState("");
   const [balance, setBalance] = useState("");
   const [limit, setLimit] = useState("");
   const [date, setDate] = useState(props.today);
@@ -34,6 +43,8 @@ export function AddAccount(props: { today: string; onClose: () => void; onDone: 
           name,
           subtype: kind,
           ...(limitMinor && { limit_minor: limitMinor }),
+          ...(isCard && paidFrom && { linked_bank_id: paidFrom }),
+          ...(isCard && dueDay && { due_day: Number(dueDay) }),
         };
         id = (await post<Account>("/accounts", body)).id;
         setCreated(id);
@@ -54,7 +65,7 @@ export function AddAccount(props: { today: string; onClose: () => void; onDone: 
   };
 
   return (
-    <Sheet title="Add account" onClose={props.onClose}>
+    <Sheet title={isCard ? "Add credit card" : "Add account"} onClose={props.onClose}>
       <form onSubmit={save} className="form">
         <Field label="Type">
           <select
@@ -92,6 +103,35 @@ export function AddAccount(props: { today: string; onClose: () => void; onDone: 
           </Field>
         </div>
         {isCard && (
+          <div className="pair">
+            <Field label="Paid from">
+              <select
+                value={paidFrom}
+                onChange={(e) => setPaidFrom(e.target.value)}
+                disabled={!!created}
+              >
+                <option value="">Not set</option>
+                {props.banks.map((bank) => (
+                  <option key={bank.id} value={bank.id}>
+                    {bank.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Payment due day">
+              <input
+                type="number"
+                min={1}
+                max={31}
+                placeholder="e.g. 21"
+                value={dueDay}
+                onChange={(e) => setDueDay(e.target.value)}
+                disabled={!!created}
+              />
+            </Field>
+          </div>
+        )}
+        {isCard && (
           <Field label="Credit limit">
             <input
               className="num"
@@ -105,7 +145,7 @@ export function AddAccount(props: { today: string; onClose: () => void; onDone: 
         )}
         {error && <p className="form-error">{error}</p>}
         <button className="primary" disabled={saving}>
-          {saving ? "Saving…" : "Add account"}
+          {saving ? "Saving…" : isCard ? "Add card" : "Add account"}
         </button>
       </form>
     </Sheet>

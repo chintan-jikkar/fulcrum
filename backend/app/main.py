@@ -1,14 +1,24 @@
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse
 
+from app.idempotency import _ledger_error
 from app.logos import logo_file
 from app.routers import book, transactions
+from app.services.ledger import LedgerError
 
 app = FastAPI(title="Parity API")
 app.include_router(transactions.router)
 app.include_router(book.router)
+
+
+@app.exception_handler(LedgerError)
+def ledger_error(request: Request, e: LedgerError) -> JSONResponse:
+    """A ledger error raised outside a write (a GET for another user's id, say) gets the same
+    status and body a write would (404, not 403, §7)."""
+    status, body = _ledger_error(e)
+    return JSONResponse(body, status_code=status)
 
 
 @app.get("/health")

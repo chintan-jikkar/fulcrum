@@ -1383,3 +1383,95 @@ a.tile:hover {
   opacity: 0;
   cursor: pointer;
 }
+
+.section-tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.add-row {
+  margin-bottom: 8px;
+}
+
+/* --- Friends ledger (P3) ----------------------------------------------------------------- */
+.friends-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .friends-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.people {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+}
+.person-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "avatar name" "avatar standing";
+  column-gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.person-row .avatar {
+  grid-area: avatar;
+}
+.person-row .person-name {
+  grid-area: name;
+  font-weight: 600;
+}
+.person-row .small {
+  grid-area: standing;
+}
+.person-row:hover,
+.person-row.on {
+  background: var(--field);
+}
+.table-wrap {
+  overflow-x: auto;
+}
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.ledger th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.ledger td {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.ledger .right {
+  text-align: right;
+}
+.ledger tr.voided td {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+.ledger .tag {
+  margin-left: 6px;
+  text-decoration: none;
+}

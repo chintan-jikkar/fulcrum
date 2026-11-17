@@ -20,6 +20,8 @@ from app.models.ledger import (
     Category,
     CategoryKind,
     Counterparty,
+    PaymentMethod,
+    TransactionTemplate,
     User,
 )
 from app.money import Money, money, percent
@@ -50,6 +52,8 @@ class CardCredit(BaseModel):
     next_due_on: date | None  # today in the user's timezone counts as not yet passed
     days_until_due: int | None  # 0 means due today
     design: str | None  # the drawn design the user picked for this card (D-072)
+    linked_bank_id: uuid.UUID | None  # the bank account that pays this card off (D-075)
+    linked_bank_name: str | None
 
 
 class AccountOut(BaseModel):
@@ -76,6 +80,7 @@ class _Details(BaseModel):
     due_day: StrictInt | None = None
     statement_day: StrictInt | None = None
     card_design: str | None = None
+    linked_bank_id: uuid.UUID | None = None
 
 
 class AccountIn(_Details):
@@ -91,7 +96,17 @@ def _pct(bps: int | None) -> str | None:
     return None if bps is None else percent(bps)
 
 
-def _account_out(acct: Account, raw: int, credit: figures.Credit | None, today: date) -> AccountOut:
+def _bank_names(s: Session, user_id: uuid.UUID) -> dict[str, str]:
+    """Bank account names by id (as text, the way meta stores linked_bank_id)."""
+    q = select(Account.id, Account.name).where(
+        Account.user_id == user_id, Account.subtype == AccountSubtype.bank
+    )
+    return {str(i): n for i, n in s.execute(q)}
+
+
+def _account_out(
+    acct: Account, raw: int, credit: figures.Credit | None, today: date, banks: dict[str, str]
+) -> AccountOut:
     due_day = acct.meta.get("due_day")
     due = None if due_day is None else figures.next_due(today, due_day)
     return AccountOut(
@@ -116,6 +131,8 @@ def _account_out(acct: Account, raw: int, credit: figures.Credit | None, today: 
             next_due_on=due,
             days_until_due=None if due is None else (due - today).days,
             design=acct.meta.get("card_design"),
+            linked_bank_id=acct.meta.get("linked_bank_id"),
+            linked_bank_name=banks.get(acct.meta.get("linked_bank_id", "")),
         ),
     )
 
@@ -131,7 +148,8 @@ def list_accounts(user_id: UserId, engine: Db) -> list[AccountOut]:
         ).all()
         accounts = sorted(accounts, key=lambda a: (SUBTYPE_ORDER.index(a.subtype), a.name))
         today = figures.today(s, user_id)
-        return [_account_out(a, raw[a.id], cards.get(a.id), today) for a in accounts]
+        banks = _bank_names(s, user_id)
+        return [_account_out(a, raw[a.id], cards.get(a.id), today, banks) for a in accounts]
 
 
 @router.post("/accounts", status_code=201, response_model=AccountOut)
@@ -139,10 +157,12 @@ def create_account(
     body: AccountIn, request: Request, user_id: UserId, engine: Db, key: IdempotencyKeyHeader
 ) -> JSONResponse:
     def work(s: Session) -> tuple[int, Any]:
-        meta = body.model_dump(exclude_none=True, exclude={"name", "subtype"})
+        meta = body.model_dump(mode="json", exclude_none=True, exclude={"name", "subtype"})
         acct = ledger.create_account(s, user_id, name=body.name, subtype=body.subtype, meta=meta)
         cards, _ = figures.credit(s, user_id)
-        out = _account_out(acct, 0, cards.get(acct.id), figures.today(s, user_id))
+        out = _account_out(
+            acct, 0, cards.get(acct.id), figures.today(s, user_id), _bank_names(s, user_id)
+        )
         return 201, out.model_dump(mode="json")
 
     return idempotent(engine, user_id, key, request_id(request, body), work)
@@ -155,9 +175,8 @@ class AccountEdit(_Details):
 def _account_now(s: Session, user_id: uuid.UUID, acct: Account) -> dict[str, Any]:
     cards, _ = figures.credit(s, user_id)
     raw = figures.balances(s, user_id)[acct.id]
-    return _account_out(acct, raw, cards.get(acct.id), figures.today(s, user_id)).model_dump(
-        mode="json"
-    )
+    today, banks = figures.today(s, user_id), _bank_names(s, user_id)
+    return _account_out(acct, raw, cards.get(acct.id), today, banks).model_dump(mode="json")
 
 
 @router.post("/accounts/{account_id}", response_model=AccountOut)
@@ -271,6 +290,50 @@ def create_counterparty(
         return 201, CounterpartyOut.model_validate(person).model_dump(mode="json")
 
     return idempotent(engine, user_id, key, request_id(request, body), work)
+
+
+class FriendLedgerRow(BaseModel):
+    transaction_id: uuid.UUID
+    occurred_on: date
+    template: TransactionTemplate
+    memo: str
+    method: PaymentMethod | None
+    voided: bool  # listed, but did not move the position
+    change: Money  # positive: they owe you more
+    position_after: Money  # positive: they owe you; negative: you owe them
+
+
+class FriendLedger(BaseModel):
+    counterparty_id: uuid.UUID
+    name: str
+    position: Money  # after every transaction listed, future-dated ones included
+    rows: list[FriendLedgerRow]  # newest first
+
+
+@router.get("/counterparties/{counterparty_id}/ledger")
+def friend_ledger(counterparty_id: uuid.UUID, user_id: UserId, engine: Db) -> FriendLedger:
+    """One person's history with a running position: the friends ledger screen (P3)."""
+    with Session(engine) as s:
+        rows = figures.friend_ledger(s, user_id, counterparty_id)  # NotFound: 404
+        name = s.scalars(select(Counterparty.name).where(Counterparty.id == counterparty_id)).one()
+        return FriendLedger(
+            counterparty_id=counterparty_id,
+            name=name,
+            position=money(rows[-1].position_after if rows else 0),
+            rows=[
+                FriendLedgerRow(
+                    transaction_id=r.txn.id,
+                    occurred_on=r.txn.occurred_on,
+                    template=r.txn.template,
+                    memo=r.txn.memo,
+                    method=r.txn.method,
+                    voided=r.txn.voided_at is not None,
+                    change=money(r.change),
+                    position_after=money(r.position_after),
+                )
+                for r in reversed(rows)
+            ],
+        )
 
 
 class CategoryOut(BaseModel):

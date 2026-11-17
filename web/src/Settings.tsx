@@ -2,6 +2,7 @@
 import { type FormEvent, useState } from "react";
 
 import { toMinor } from "./amount";
+import type { Kind } from "./AddAccount";
 import { type Account, type Book, post } from "./api";
 import { loadMode, loadTheme, type Mode, PRESETS, saveMode, saveTheme, type Theme } from "./theme";
 import { AccountMark, Field } from "./ui";
@@ -233,7 +234,15 @@ function AppearancePanel() {
 
 type Page = "profile" | "accounts" | "appearance";
 
-export function Settings({ book, onChanged }: { book: Book; onChanged: () => void }) {
+export function Settings({
+  book,
+  onChanged,
+  onAddAccount,
+}: {
+  book: Book;
+  onChanged: () => void;
+  onAddAccount: (kind: Kind) => void;
+}) {
   // Which page is open; null is the list. Leaving the tab closes the page again.
   const [page, setPage] = useState<Page | null>(null);
   const mine = book.accounts.filter(
@@ -298,6 +307,14 @@ export function Settings({ book, onChanged }: { book: Book; onChanged: () => voi
         {page === "profile" && <ProfilePanel book={book} onSaved={onChanged} />}
         {page === "accounts" && (
           <section className="panel glass">
+            <div className="actions add-row">
+              <button className="pill" onClick={() => onAddAccount("bank")}>
+                + Bank or cash
+              </button>
+              <button className="pill" onClick={() => onAddAccount("credit_card")}>
+                + Credit card
+              </button>
+            </div>
             {mine.length === 0 && <p className="muted">No accounts yet.</p>}
             <div>
               {mine.map((a) => (

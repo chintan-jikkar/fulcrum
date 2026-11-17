@@ -135,6 +135,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/counterparties/{counterparty_id}/ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Friend Ledger
+         * @description One person's history with a running position: the friends ledger screen (P3).
+         */
+        get: operations["friend_ledger_counterparties__counterparty_id__ledger_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -411,6 +431,8 @@ export interface components {
             last4?: string | null;
             /** Limit Minor */
             limit_minor?: number | null;
+            /** Linked Bank Id */
+            linked_bank_id?: string | null;
             /** Name */
             name?: string | null;
             /** Statement Day */
@@ -426,6 +448,8 @@ export interface components {
             last4?: string | null;
             /** Limit Minor */
             limit_minor?: number | null;
+            /** Linked Bank Id */
+            linked_bank_id?: string | null;
             /** Name */
             name: string;
             /** Statement Day */
@@ -513,6 +537,10 @@ export interface components {
             /** Due Day */
             due_day: number | null;
             limit: components["schemas"]["Money"] | null;
+            /** Linked Bank Id */
+            linked_bank_id: string | null;
+            /** Linked Bank Name */
+            linked_bank_name: string | null;
             /** Next Due On */
             next_due_on: string | null;
             /** Statement Day */
@@ -618,6 +646,40 @@ export interface components {
             utilization_bps: number | null;
             /** Utilization Display */
             utilization_display: string | null;
+        };
+        /** FriendLedger */
+        FriendLedger: {
+            /**
+             * Counterparty Id
+             * Format: uuid
+             */
+            counterparty_id: string;
+            /** Name */
+            name: string;
+            position: components["schemas"]["Money"];
+            /** Rows */
+            rows: components["schemas"]["FriendLedgerRow"][];
+        };
+        /** FriendLedgerRow */
+        FriendLedgerRow: {
+            change: components["schemas"]["Money"];
+            /** Memo */
+            memo: string;
+            method: components["schemas"]["PaymentMethod"] | null;
+            /**
+             * Occurred On
+             * Format: date
+             */
+            occurred_on: string;
+            position_after: components["schemas"]["Money"];
+            template: components["schemas"]["TransactionTemplate"];
+            /**
+             * Transaction Id
+             * Format: uuid
+             */
+            transaction_id: string;
+            /** Voided */
+            voided: boolean;
         };
         /**
          * FriendOutIn
@@ -1213,6 +1275,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CounterpartyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    friend_ledger_counterparties__counterparty_id__ledger_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                counterparty_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendLedger"];
                 };
             };
             /** @description Validation Error */

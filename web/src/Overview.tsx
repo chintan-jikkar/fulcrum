@@ -1,6 +1,7 @@
 // The dashboard. Every number here is a string the API already formatted.
 import { dueText } from "./AccountPage";
 import type { Filter } from "./Activity";
+import type { Kind } from "./AddAccount";
 import type { Account, Book } from "./api";
 import { monthLabel } from "./dates";
 import { MiniCard } from "./cards";
@@ -63,7 +64,7 @@ export function Overview({
   onShow,
 }: {
   book: Book;
-  onAddAccount: () => void;
+  onAddAccount: (kind: Kind) => void;
   onShow: (filter: Filter) => void; // open Activity narrowed to a brand or category
 }) {
   const { summary } = book;
@@ -109,7 +110,7 @@ export function Overview({
 
       <div className="section-head">
         <h2>Cash &amp; bank</h2>
-        <button className="link" onClick={onAddAccount}>
+        <button className="link" onClick={() => onAddAccount("bank")}>
           + Add account
         </button>
       </div>
@@ -131,24 +132,26 @@ export function Overview({
         ))}
       </div>
 
-      {cards.length > 0 && (
-        <>
-          <div className="section-head">
-            <h2>Credit cards</h2>
-            {summary.credit.limit && (
-              <span className="muted small">
-                {summary.credit.owed.display} owed of {summary.credit.limit.display} ·{" "}
-                {summary.credit.utilization_display} used
-              </span>
-            )}
-          </div>
-          <div className="grid">
-            {cards.map((c) => (
-              <CardTile key={c.id} card={c} />
-            ))}
-          </div>
-        </>
-      )}
+      <div className="section-head">
+        <h2>Credit cards</h2>
+        <span className="section-tools">
+          {summary.credit.limit && (
+            <span className="muted small">
+              {summary.credit.owed.display} owed of {summary.credit.limit.display} ·{" "}
+              {summary.credit.utilization_display} used
+            </span>
+          )}
+          <button className="link" onClick={() => onAddAccount("credit_card")}>
+            + Add card
+          </button>
+        </span>
+      </div>
+      {cards.length === 0 && <p className="muted">No cards yet.</p>}
+      <div className="grid">
+        {cards.map((c) => (
+          <CardTile key={c.id} card={c} />
+        ))}
+      </div>
 
       <div className="columns">
         <section className="panel glass">

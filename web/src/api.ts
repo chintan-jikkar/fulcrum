@@ -17,6 +17,7 @@ export type Subtype = Account["subtype"];
 export type Profile = Schemas["Profile"];
 export type Brand = Schemas["BrandOut"];
 export type MerchantTotal = Schemas["MerchantTotal"];
+export type FriendLedger = Schemas["FriendLedger"];
 
 // In development Vite forwards /api/... to the Python server (see vite.config.ts).
 export const BASE = "/api";
@@ -59,6 +60,15 @@ export async function loadBook(): Promise<Book> {
     people: people.data,
     profile: profile.data,
   };
+}
+
+/** One person's history with a running position (the friends ledger). Fetched when opened. */
+export async function loadFriendLedger(counterpartyId: string): Promise<FriendLedger> {
+  const { data } = await client.GET("/counterparties/{counterparty_id}/ledger", {
+    params: { path: { counterparty_id: counterpartyId } },
+  });
+  if (!data) throw new Error("Could not load this person's ledger.");
+  return data;
 }
 
 /** What the server said was wrong, in words fit to show next to the form. */
