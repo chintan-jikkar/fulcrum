@@ -2,7 +2,7 @@
 import { type FormEvent, useState } from "react";
 
 import { toMinor } from "./amount";
-import { type Account, post } from "./api";
+import { type Account, type Brand, post } from "./api";
 import { Field, Sheet } from "./ui";
 
 export type Kind = "bank" | "cash" | "credit_card";
@@ -11,6 +11,7 @@ export function AddAccount(props: {
   today: string;
   kind: Kind; // what the sheet opens as; "+ Add card" opens it as a credit card
   banks: Account[]; // the user's bank accounts, one of which can pay a new card off
+  issuers: Brand[]; // banks to pick as the issuer when the name does not say it
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -19,6 +20,13 @@ export function AddAccount(props: {
   // The bank that pays the card off (D-075). The only bank is picked for you.
   const [paidFrom, setPaidFrom] = useState(props.banks.length === 1 ? props.banks[0]!.id : "");
   const [dueDay, setDueDay] = useState("");
+  const [issuer, setIssuer] = useState("");
+  const pickIssuer = (key: string) => {
+    setIssuer(key);
+    // A card is most likely paid from an account at the same bank: suggest it if one exists.
+    const same = props.banks.find((b) => b.brand?.key === key);
+    if (same) setPaidFrom(same.id);
+  };
   const [balance, setBalance] = useState("");
   const [limit, setLimit] = useState("");
   const [date, setDate] = useState(props.today);
@@ -44,6 +52,7 @@ export function AddAccount(props: {
           subtype: kind,
           ...(limitMinor && { limit_minor: limitMinor }),
           ...(isCard && paidFrom && { linked_bank_id: paidFrom }),
+          ...(kind !== "cash" && issuer && { issuer }),
           ...(isCard && dueDay && { due_day: Number(dueDay) }),
         };
         id = (await post<Account>("/accounts", body)).id;
@@ -88,6 +97,22 @@ export function AddAccount(props: {
             autoFocus
           />
         </Field>
+        {kind !== "cash" && (
+          <Field label="Issued by">
+            <select
+              value={issuer}
+              onChange={(e) => pickIssuer(e.target.value)}
+              disabled={!!created}
+            >
+              <option value="">From the name, or none</option>
+              {props.issuers.map((b) => (
+                <option key={b.key} value={b.key}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
         <div className="pair">
           <Field label={isCard ? "Owed today" : "Balance today"}>
             <input

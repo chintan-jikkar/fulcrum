@@ -18,6 +18,8 @@ export type Profile = Schemas["Profile"];
 export type Brand = Schemas["BrandOut"];
 export type MerchantTotal = Schemas["MerchantTotal"];
 export type FriendLedger = Schemas["FriendLedger"];
+export type Rule = Schemas["RuleOut"];
+export type SplitOut = Schemas["SplitOut"];
 
 // In development Vite forwards /api/... to the Python server (see vite.config.ts).
 export const BASE = "/api";
@@ -31,24 +33,31 @@ export type Book = {
   categories: Category[];
   people: Person[];
   profile: Profile;
+  rules: Rule[]; // subscriptions and other recurring charges, soonest first
+  issuers: Brand[]; // banks a card or account can be tied to
 };
 
 export async function loadBook(): Promise<Book> {
-  const [accounts, summary, transactions, categories, people, profile] = await Promise.all([
-    client.GET("/accounts"),
-    client.GET("/summary"),
-    client.GET("/transactions"),
-    client.GET("/categories"),
-    client.GET("/counterparties"),
-    client.GET("/me"),
-  ]);
+  const [accounts, summary, transactions, categories, people, profile, rules, issuers] =
+    await Promise.all([
+      client.GET("/accounts"),
+      client.GET("/summary"),
+      client.GET("/transactions"),
+      client.GET("/categories"),
+      client.GET("/counterparties"),
+      client.GET("/me"),
+      client.GET("/recurring"),
+      client.GET("/brands/issuers"),
+    ]);
   if (
     !accounts.data ||
     !summary.data ||
     !transactions.data ||
     !categories.data ||
     !people.data ||
-    !profile.data
+    !profile.data ||
+    !rules.data ||
+    !issuers.data
   ) {
     throw new Error("The API did not answer. Is it running?");
   }
@@ -59,6 +68,8 @@ export async function loadBook(): Promise<Book> {
     categories: categories.data,
     people: people.data,
     profile: profile.data,
+    rules: rules.data,
+    issuers: issuers.data,
   };
 }
 

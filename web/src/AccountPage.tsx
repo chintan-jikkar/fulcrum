@@ -5,7 +5,7 @@ import { type FormEvent, useState } from "react";
 import { Activity } from "./Activity";
 import type { Preset } from "./AddTransaction";
 import { toMinor } from "./amount";
-import { type Account, type Book, post } from "./api";
+import { type Account, type Book, type Brand, post } from "./api";
 import { CardArt, COLOURS, DESIGNS, MiniCard, NEUTRAL_CARD } from "./cards";
 import { AccountMark, Field } from "./ui";
 
@@ -21,6 +21,7 @@ export function dueText(days: number): string {
 function Details(props: {
   account: Account;
   banks: Account[]; // the banks that could pay this card off
+  issuers: Brand[]; // banks the user can pick as the one that issued it
   onPreview: (design: string) => void; // the card at the top shows the design being picked
   onDone: () => void;
   onChanged: () => void;
@@ -28,12 +29,20 @@ function Details(props: {
   const { account } = props;
   const isCard = account.subtype === "credit_card";
   const credit = account.credit;
+  const [name, setName] = useState(account.name);
   const [last4, setLast4] = useState(account.last4 ?? "");
   const [limit, setLimit] = useState("");
   const [due, setDue] = useState(credit?.due_day?.toString() ?? "");
   const [statement, setStatement] = useState(credit?.statement_day?.toString() ?? "");
   const [design, setDesign] = useState(credit?.design ?? "");
   const [paidFrom, setPaidFrom] = useState(credit?.linked_bank_id ?? "");
+  const [issuer, setIssuer] = useState(account.brand?.key ?? "");
+  const pickIssuer = (key: string) => {
+    setIssuer(key);
+    // A BofA card is most likely paid from a BofA account: suggest it if nothing is set yet.
+    const same = props.banks.find((b) => b.brand?.key === key);
+    if (isCard && !paidFrom && same) setPaidFrom(same.id);
+  };
   // Picking a colour or a design shows it on the card at the top before it is saved.
   const pick = (value: string) => {
     setDesign(value);
@@ -45,7 +54,9 @@ function Details(props: {
     event.preventDefault();
     setError(null);
     const body: Record<string, unknown> = {};
+    if (name.trim() && name.trim() !== account.name) body.name = name;
     if (last4 && last4 !== account.last4) body.last4 = last4;
+    if (issuer && issuer !== account.brand?.key) body.issuer = issuer;
     if (isCard) {
       if (limit.trim()) {
         const minor = toMinor(limit);
@@ -71,6 +82,9 @@ function Details(props: {
   return (
     <form className="panel glass account-details" onSubmit={save}>
       <h2>Edit {account.name}</h2>
+      <Field label="Name">
+        <input value={name} onChange={(e) => setName(e.target.value)} required />
+      </Field>
       {isCard && (
         <>
           <span className="muted small">Colour</span>
@@ -123,6 +137,18 @@ function Details(props: {
           </div>
         </>
       )}
+      <Field label="Issued by">
+        <select value={issuer} onChange={(e) => pickIssuer(e.target.value)}>
+          <option value="" disabled>
+            Choose the bank…
+          </option>
+          {props.issuers.map((b) => (
+            <option key={b.key} value={b.key}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+      </Field>
       <div className="pair">
         <Field label="Last 4 digits">
           <input
@@ -336,6 +362,7 @@ export function AccountPage(props: {
           key={account.id}
           account={account}
           banks={book.accounts.filter((a) => a.is_active && a.subtype === "bank")}
+          issuers={book.issuers}
           onPreview={setPreview}
           onDone={close}
           onChanged={props.onChanged}

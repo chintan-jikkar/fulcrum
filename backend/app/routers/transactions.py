@@ -17,6 +17,7 @@ from app.models.ledger import (
     AccountKind,
     AccountSubtype,
     Category,
+    Counterparty,
     PaymentMethod,
     Posting,
     Transaction,
@@ -24,7 +25,7 @@ from app.models.ledger import (
 )
 from app.money import Money, money
 from app.routers.deps import Db, IdempotencyKeyHeader, UserId
-from app.services import ledger
+from app.services import ledger, split
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
@@ -161,6 +162,86 @@ def void(
         request_id(request),
         lambda s: (200, _out(ledger.void(s, user_id, transaction_id))),
     )
+
+
+# --- Splitting a bill (D-078) ----------------------------------------------------------------
+
+
+class SplitUnits(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    counterparty_id: uuid.UUID
+    units: StrictInt
+
+
+class SplitItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    amount_minor: StrictInt
+    my_units: StrictInt = 0
+    units: list[SplitUnits]
+
+
+class SplitIn(_WithMethod):
+    funding_id: uuid.UUID
+    category_id: uuid.UUID
+    items: list[SplitItem]
+    preview: bool = False  # true: work the shares out and write nothing
+
+
+class SplitShare(BaseModel):
+    counterparty_id: uuid.UUID
+    name: str
+    amount: Money
+
+
+class SplitOut(BaseModel):
+    mine: Money  # your share: the spend
+    shares: list[SplitShare]  # each friend's share: a lend
+    transaction_ids: list[uuid.UUID]  # empty for a preview
+
+
+@router.post("/split", status_code=201, response_model=SplitOut)
+def split_bill(
+    body: SplitIn, request: Request, user_id: UserId, engine: Db, key: IdempotencyKeyHeader
+) -> JSONResponse:
+    """Split a bill: your share as a spend, each friend's as a lend on the same account.
+    With preview, answers 200 with the shares and writes nothing."""
+
+    def work(s: Session) -> tuple[int, Any]:
+        items = []
+        for item in body.items:
+            people = [u.counterparty_id for u in item.units]
+            if len(set(people)) != len(people):
+                raise ledger.RuleViolation("split", "a person appears twice in one item")
+            units = {u.counterparty_id: u.units for u in item.units}
+            items.append(split.Item(item.amount_minor, item.my_units, units))
+        mine, theirs = split.allocate(body.amount_minor, items)
+        names = dict(
+            s.execute(
+                select(Counterparty.id, Counterparty.name).where(
+                    Counterparty.user_id == user_id, Counterparty.id.in_(list(theirs))
+                )
+            ).all()
+        )
+        missing = set(theirs) - set(names)
+        if missing:
+            raise ledger.NotFound(f"counterparty {missing.pop()}")
+        written = []
+        if not body.preview:
+            fields = body.model_dump(exclude={"items", "preview"})
+            written = split.split(s, user_id, items=items, **fields)
+        out = SplitOut(
+            mine=money(mine),
+            shares=[
+                SplitShare(counterparty_id=p, name=names[p], amount=money(n))
+                for p, n in theirs.items()
+            ],
+            transaction_ids=[t.id for t in written],
+        )
+        return (200 if body.preview else 201), out.model_dump(mode="json")
+
+    return idempotent(engine, user_id, key, request_id(request, body), work)
 
 
 # --- The list -------------------------------------------------------------------------------

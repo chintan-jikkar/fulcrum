@@ -22,6 +22,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.brands import ISSUERS
 from app.models.ledger import (
     Account,
     AccountKind,
@@ -393,6 +394,9 @@ def _check_details(subtype: AccountSubtype, details: dict[str, Any]) -> None:
     for key in CARD_ONLY:
         if details.get(key) is not None and subtype is not Sub.credit_card:
             raise RuleViolation("account", f"only a credit card has {key}")
+    issuer = details.get("issuer")
+    if issuer is not None and (subtype is Sub.cash or issuer not in {b.key for b in ISSUERS}):
+        raise RuleViolation("account", f"issuer must be a bank from the list, got {issuer!r}")
     for key in ("due_day", "statement_day"):
         day = details.get(key)
         if day is not None and (type(day) is not int or not 1 <= day <= 31):
@@ -426,12 +430,12 @@ def edit_account(
     **details: Any,
 ) -> Account:
     """Rename a cash, bank or card account, change a card's limit, or set its details (last4,
-    due_day, statement_day, card_design, linked_bank_id). Person accounts take their name from
-    the counterparty, so they are not edited here."""
+    issuer, due_day, statement_day, card_design, linked_bank_id). Person accounts take their
+    name from the counterparty, so they are not edited here."""
     acct = _lock_account(session, user_id, account_id, exclusive=True)
     if acct.subtype not in CASH_BANK_CARD:
         raise RuleViolation("account", f"{acct.subtype} accounts are not edited directly")
-    unknown = set(details) - {"last4", *CARD_ONLY}
+    unknown = set(details) - {"last4", "issuer", *CARD_ONLY}
     if unknown:
         raise TypeError(f"unexpected fields {sorted(unknown)}")
     _check_details(acct.subtype, details)

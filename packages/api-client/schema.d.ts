@@ -79,6 +79,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/brands/issuers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Issuers
+         * @description Banks a card or account can be tied to as its issuer (D-077).
+         */
+        get: operations["list_issuers_brands_issuers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/brands/{key}/logo": {
         parameters: {
             query?: never;
@@ -184,6 +204,136 @@ export interface paths {
         put?: never;
         /** Edit Profile */
         post: operations["edit_profile_me_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/recurring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Rules
+         * @description Every rule, cancelled ones included, soonest first.
+         */
+        get: operations["list_rules_recurring_get"];
+        put?: never;
+        /** Create Rule */
+        post: operations["create_rule_recurring_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/recurring/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Edit Rule */
+        post: operations["edit_rule_recurring__rule_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/recurring/{rule_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Rule */
+        post: operations["cancel_rule_recurring__rule_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/recurring/{rule_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm Rule
+         * @description It was charged: write the spend and move to the next date.
+         */
+        post: operations["confirm_rule_recurring__rule_id__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/recurring/{rule_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Rule */
+        post: operations["resume_rule_recurring__rule_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/recurring/{rule_id}/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Skip Rule */
+        post: operations["skip_rule_recurring__rule_id__skip_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reminders/upcoming": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Upcoming
+         * @description What to remind the user of now: active rules within their window or past due (§12).
+         *     The phone app (P6) turns this into notifications.
+         */
+        get: operations["upcoming_reminders_upcoming_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -383,6 +533,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/transactions/split": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Split Bill
+         * @description Split a bill: your share as a spend, each friend's as a lend on the same account.
+         *     With preview, answers 200 with the shares and writes nothing.
+         */
+        post: operations["split_bill_transactions_split_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/transactions/transfer": {
         parameters: {
             query?: never;
@@ -427,6 +598,8 @@ export interface components {
             card_design?: string | null;
             /** Due Day */
             due_day?: number | null;
+            /** Issuer */
+            issuer?: string | null;
             /** Last4 */
             last4?: string | null;
             /** Limit Minor */
@@ -444,6 +617,8 @@ export interface components {
             card_design?: string | null;
             /** Due Day */
             due_day?: number | null;
+            /** Issuer */
+            issuer?: string | null;
             /** Last4 */
             last4?: string | null;
             /** Limit Minor */
@@ -621,6 +796,13 @@ export interface components {
             /** Share Bps */
             share_bps: number;
             total: components["schemas"]["Money"];
+        };
+        /** ConfirmIn */
+        ConfirmIn: {
+            /** Amount Minor */
+            amount_minor?: number | null;
+            /** Occurred On */
+            occurred_on?: string | null;
         };
         /** CounterpartyIn */
         CounterpartyIn: {
@@ -849,6 +1031,11 @@ export interface components {
             /** Timezone */
             timezone?: string | null;
         };
+        /**
+         * RecurringCadence
+         * @enum {string}
+         */
+        RecurringCadence: "weekly" | "monthly" | "yearly";
         /** RefundIn */
         RefundIn: {
             /** Amount Minor */
@@ -873,6 +1060,90 @@ export interface components {
             occurred_on: string;
             /** Refund Of Id */
             refund_of_id?: string | null;
+        };
+        /** RuleEdit */
+        RuleEdit: {
+            /** Amount Minor */
+            amount_minor?: number | null;
+            cadence?: components["schemas"]["RecurringCadence"] | null;
+            /** Category Id */
+            category_id?: string | null;
+            /** Funding Id */
+            funding_id?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Next Due On */
+            next_due_on?: string | null;
+            /** Remind Days */
+            remind_days?: number | null;
+        };
+        /** RuleIn */
+        RuleIn: {
+            /** Amount Minor */
+            amount_minor: number;
+            cadence: components["schemas"]["RecurringCadence"];
+            /**
+             * Category Id
+             * Format: uuid
+             */
+            category_id: string;
+            /**
+             * Funding Id
+             * Format: uuid
+             */
+            funding_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Next Due On
+             * Format: date
+             */
+            next_due_on: string;
+            /**
+             * Remind Days
+             * @default 2
+             */
+            remind_days: number;
+        };
+        /** RuleOut */
+        RuleOut: {
+            amount: components["schemas"]["Money"];
+            brand: components["schemas"]["BrandOut"] | null;
+            cadence: components["schemas"]["RecurringCadence"];
+            /**
+             * Category Id
+             * Format: uuid
+             */
+            category_id: string;
+            /** Category Name */
+            category_name: string;
+            /** Days Until Due */
+            days_until_due: number;
+            /**
+             * Funding Id
+             * Format: uuid
+             */
+            funding_id: string;
+            /** Funding Name */
+            funding_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Next Due On
+             * Format: date
+             */
+            next_due_on: string;
+            /** Remind */
+            remind: boolean;
+            /** Remind Days */
+            remind_days: number;
         };
         /** SpendIn */
         SpendIn: {
@@ -899,6 +1170,80 @@ export interface components {
              * Format: date
              */
             occurred_on: string;
+        };
+        /** SplitIn */
+        SplitIn: {
+            /** Amount Minor */
+            amount_minor: number;
+            /**
+             * Category Id
+             * Format: uuid
+             */
+            category_id: string;
+            /**
+             * Funding Id
+             * Format: uuid
+             */
+            funding_id: string;
+            /** Items */
+            items: components["schemas"]["SplitItem"][];
+            /**
+             * Memo
+             * @default
+             */
+            memo: string;
+            method?: components["schemas"]["PaymentMethod"] | null;
+            /**
+             * Occurred On
+             * Format: date
+             */
+            occurred_on: string;
+            /**
+             * Preview
+             * @default false
+             */
+            preview: boolean;
+        };
+        /** SplitItem */
+        SplitItem: {
+            /** Amount Minor */
+            amount_minor: number;
+            /**
+             * My Units
+             * @default 0
+             */
+            my_units: number;
+            /** Units */
+            units: components["schemas"]["SplitUnits"][];
+        };
+        /** SplitOut */
+        SplitOut: {
+            mine: components["schemas"]["Money"];
+            /** Shares */
+            shares: components["schemas"]["SplitShare"][];
+            /** Transaction Ids */
+            transaction_ids: string[];
+        };
+        /** SplitShare */
+        SplitShare: {
+            amount: components["schemas"]["Money"];
+            /**
+             * Counterparty Id
+             * Format: uuid
+             */
+            counterparty_id: string;
+            /** Name */
+            name: string;
+        };
+        /** SplitUnits */
+        SplitUnits: {
+            /**
+             * Counterparty Id
+             * Format: uuid
+             */
+            counterparty_id: string;
+            /** Units */
+            units: number;
         };
         /** Summary */
         Summary: {
@@ -1182,6 +1527,26 @@ export interface operations {
             };
         };
     };
+    list_issuers_brands_issuers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandOut"][];
+                };
+            };
+        };
+    };
     brand_logo_brands__key__logo_get: {
         parameters: {
             query?: {
@@ -1392,6 +1757,254 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_rules_recurring_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"][];
+                };
+            };
+        };
+    };
+    create_rule_recurring_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_rule_recurring__rule_id__post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_rule_recurring__rule_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_rule_recurring__rule_id__confirm_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ConfirmIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_rule_recurring__rule_id__resume_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    skip_rule_recurring__rule_id__skip_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upcoming_reminders_upcoming_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"][];
                 };
             };
         };
@@ -1749,6 +2362,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TransactionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    split_bill_transactions_split_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SplitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SplitOut"];
                 };
             };
             /** @description Validation Error */

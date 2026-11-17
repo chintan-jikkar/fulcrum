@@ -5,12 +5,13 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from app.idempotency import _ledger_error
 from app.logos import logo_file
-from app.routers import book, transactions
+from app.routers import book, recurring, transactions
 from app.services.ledger import LedgerError
 
 app = FastAPI(title="Parity API")
 app.include_router(transactions.router)
 app.include_router(book.router)
+app.include_router(recurring.router)
 
 
 @app.exception_handler(LedgerError)

@@ -156,6 +156,12 @@ class BrandOut(BaseModel):
     mark: str
 
 
+BY_KEY = {b.key: b for b in BRANDS}
+# Banks a user can pick as the one that issued a card or holds an account (D-077). Card
+# networks are not issuers.
+ISSUERS = tuple(b for b in BRANDS if b.kind == "bank" and b.key not in {"visa", "mastercard"})
+
+
 def brand_out(brand: Brand | None) -> BrandOut | None:
     if brand is None:
         return None

@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, StrictInt
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.brands import BrandOut, bank_of, brand_out, merchant_of
+from app.brands import BY_KEY, ISSUERS, BrandOut, bank_of, brand_out, merchant_of
 from app.idempotency import idempotent
 from app.models.ledger import (
     Account,
@@ -81,6 +81,7 @@ class _Details(BaseModel):
     statement_day: StrictInt | None = None
     card_design: str | None = None
     linked_bank_id: uuid.UUID | None = None
+    issuer: str | None = None  # a key from GET /brands/issuers
 
 
 class AccountIn(_Details):
@@ -116,7 +117,10 @@ def _account_out(
         kind=acct.kind,
         is_active=acct.is_active,
         counterparty_id=acct.counterparty_id,
-        brand=brand_out(bank_of(acct.name)) if acct.counterparty_id is None else None,
+        # The bank the user picked as issuer, else the one the name mentions.
+        brand=brand_out(BY_KEY.get(acct.meta.get("issuer", "")) or bank_of(acct.name))
+        if acct.counterparty_id is None
+        else None,
         balance=money(-raw if acct.kind is AccountKind.LIABILITY else raw),
         last4=acct.meta.get("last4"),
         credit=None
@@ -222,6 +226,12 @@ def _add_archive_route(action: str) -> None:
 
 for _action in ("archive", "unarchive"):
     _add_archive_route(_action)
+
+
+@router.get("/brands/issuers", tags=["brands"])
+def list_issuers() -> list[BrandOut]:
+    """Banks a card or account can be tied to as its issuer (D-077)."""
+    return [b for b in (brand_out(i) for i in ISSUERS) if b is not None]
 
 
 # --- Profile ----------------------------------------------------------------------------------

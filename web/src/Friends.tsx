@@ -77,6 +77,7 @@ function LedgerTable({ ledger }: { ledger: FriendLedger }) {
 export function Friends(props: {
   book: Book;
   onAdd: (preset: Preset) => void;
+  onSplit: () => void;
 }) {
   const { book } = props;
   const friends = book.summary.friends;
@@ -106,9 +107,14 @@ export function Friends(props: {
     <>
       <div className="section-head">
         <h1>Friends</h1>
-        <button className="link" onClick={() => props.onAdd({ template: "lend", person: "new" })}>
-          + Add person
-        </button>
+        <span className="section-tools">
+          <button className="pill solid" onClick={props.onSplit}>
+            Split a bill
+          </button>
+          <button className="link" onClick={() => props.onAdd({ template: "lend", person: "new" })}>
+            + Add person
+          </button>
+        </span>
       </div>
       {friends.length === 0 && <p className="muted">Nobody yet. Lend or borrow to add a person.</p>}
 

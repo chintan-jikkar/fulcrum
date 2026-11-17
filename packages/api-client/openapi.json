@@ -26,6 +26,17 @@
             ],
             "title": "Due Day"
           },
+          "issuer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issuer"
+          },
           "last4": {
             "anyOf": [
               {
@@ -110,6 +121,17 @@
               }
             ],
             "title": "Due Day"
+          },
+          "issuer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issuer"
           },
           "last4": {
             "anyOf": [
@@ -652,6 +674,36 @@
         "title": "CategoryTotal",
         "type": "object"
       },
+      "ConfirmIn": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Minor"
+          },
+          "occurred_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred On"
+          }
+        },
+        "title": "ConfirmIn",
+        "type": "object"
+      },
       "CounterpartyIn": {
         "additionalProperties": false,
         "properties": {
@@ -1189,6 +1241,15 @@
         "title": "ProfileEdit",
         "type": "object"
       },
+      "RecurringCadence": {
+        "enum": [
+          "weekly",
+          "monthly",
+          "yearly"
+        ],
+        "title": "RecurringCadence",
+        "type": "string"
+      },
       "RefundIn": {
         "additionalProperties": false,
         "properties": {
@@ -1254,6 +1315,224 @@
         "title": "RefundIn",
         "type": "object"
       },
+      "RuleEdit": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Minor"
+          },
+          "cadence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecurringCadence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "funding_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Funding Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "next_due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Due On"
+          },
+          "remind_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remind Days"
+          }
+        },
+        "title": "RuleEdit",
+        "type": "object"
+      },
+      "RuleIn": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "cadence": {
+            "$ref": "#/components/schemas/RecurringCadence"
+          },
+          "category_id": {
+            "format": "uuid",
+            "title": "Category Id",
+            "type": "string"
+          },
+          "funding_id": {
+            "format": "uuid",
+            "title": "Funding Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "next_due_on": {
+            "format": "date",
+            "title": "Next Due On",
+            "type": "string"
+          },
+          "remind_days": {
+            "default": 2,
+            "title": "Remind Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "amount_minor",
+          "funding_id",
+          "category_id",
+          "cadence",
+          "next_due_on"
+        ],
+        "title": "RuleIn",
+        "type": "object"
+      },
+      "RuleOut": {
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrandOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cadence": {
+            "$ref": "#/components/schemas/RecurringCadence"
+          },
+          "category_id": {
+            "format": "uuid",
+            "title": "Category Id",
+            "type": "string"
+          },
+          "category_name": {
+            "title": "Category Name",
+            "type": "string"
+          },
+          "days_until_due": {
+            "title": "Days Until Due",
+            "type": "integer"
+          },
+          "funding_id": {
+            "format": "uuid",
+            "title": "Funding Id",
+            "type": "string"
+          },
+          "funding_name": {
+            "title": "Funding Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "next_due_on": {
+            "format": "date",
+            "title": "Next Due On",
+            "type": "string"
+          },
+          "remind": {
+            "title": "Remind",
+            "type": "boolean"
+          },
+          "remind_days": {
+            "title": "Remind Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "amount",
+          "brand",
+          "funding_id",
+          "funding_name",
+          "category_id",
+          "category_name",
+          "cadence",
+          "next_due_on",
+          "days_until_due",
+          "remind_days",
+          "remind",
+          "is_active"
+        ],
+        "title": "RuleOut",
+        "type": "object"
+      },
       "SpendIn": {
         "additionalProperties": false,
         "properties": {
@@ -1299,6 +1578,165 @@
           "category_id"
         ],
         "title": "SpendIn",
+        "type": "object"
+      },
+      "SplitIn": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "category_id": {
+            "format": "uuid",
+            "title": "Category Id",
+            "type": "string"
+          },
+          "funding_id": {
+            "format": "uuid",
+            "title": "Funding Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SplitItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "memo": {
+            "default": "",
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "preview": {
+            "default": false,
+            "title": "Preview",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "occurred_on",
+          "funding_id",
+          "category_id",
+          "items"
+        ],
+        "title": "SplitIn",
+        "type": "object"
+      },
+      "SplitItem": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "my_units": {
+            "default": 0,
+            "title": "My Units",
+            "type": "integer"
+          },
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/SplitUnits"
+            },
+            "title": "Units",
+            "type": "array"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "units"
+        ],
+        "title": "SplitItem",
+        "type": "object"
+      },
+      "SplitOut": {
+        "properties": {
+          "mine": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "shares": {
+            "items": {
+              "$ref": "#/components/schemas/SplitShare"
+            },
+            "title": "Shares",
+            "type": "array"
+          },
+          "transaction_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Transaction Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "mine",
+          "shares",
+          "transaction_ids"
+        ],
+        "title": "SplitOut",
+        "type": "object"
+      },
+      "SplitShare": {
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "counterparty_id": {
+            "format": "uuid",
+            "title": "Counterparty Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "counterparty_id",
+          "name",
+          "amount"
+        ],
+        "title": "SplitShare",
+        "type": "object"
+      },
+      "SplitUnits": {
+        "additionalProperties": false,
+        "properties": {
+          "counterparty_id": {
+            "format": "uuid",
+            "title": "Counterparty Id",
+            "type": "string"
+          },
+          "units": {
+            "title": "Units",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "counterparty_id",
+          "units"
+        ],
+        "title": "SplitUnits",
         "type": "object"
       },
       "Summary": {
@@ -1887,6 +2325,33 @@
         ]
       }
     },
+    "/brands/issuers": {
+      "get": {
+        "description": "Banks a card or account can be tied to as its issuer (D-077).",
+        "operationId": "list_issuers_brands_issuers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BrandOut"
+                  },
+                  "title": "Response List Issuers Brands Issuers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Issuers",
+        "tags": [
+          "book",
+          "brands"
+        ]
+      }
+    },
     "/brands/{key}/logo": {
       "get": {
         "description": "A brand's logo (D-067). Public, like a favicon: it is the same for everyone and says\nnothing about the caller. Only keys from the brand table are looked up.",
@@ -2175,6 +2640,408 @@
         "summary": "Edit Profile",
         "tags": [
           "book"
+        ]
+      }
+    },
+    "/recurring": {
+      "get": {
+        "description": "Every rule, cancelled ones included, soonest first.",
+        "operationId": "list_rules_recurring_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleOut"
+                  },
+                  "title": "Response List Rules Recurring Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Rules",
+        "tags": [
+          "recurring"
+        ]
+      },
+      "post": {
+        "operationId": "create_rule_recurring_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Rule",
+        "tags": [
+          "recurring"
+        ]
+      }
+    },
+    "/recurring/{rule_id}": {
+      "post": {
+        "operationId": "edit_rule_recurring__rule_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Edit Rule",
+        "tags": [
+          "recurring"
+        ]
+      }
+    },
+    "/recurring/{rule_id}/cancel": {
+      "post": {
+        "operationId": "cancel_rule_recurring__rule_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Rule",
+        "tags": [
+          "recurring"
+        ]
+      }
+    },
+    "/recurring/{rule_id}/confirm": {
+      "post": {
+        "description": "It was charged: write the spend and move to the next date.",
+        "operationId": "confirm_rule_recurring__rule_id__confirm_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ConfirmIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Confirm Rule",
+        "tags": [
+          "recurring"
+        ]
+      }
+    },
+    "/recurring/{rule_id}/resume": {
+      "post": {
+        "operationId": "resume_rule_recurring__rule_id__resume_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resume Rule",
+        "tags": [
+          "recurring"
+        ]
+      }
+    },
+    "/recurring/{rule_id}/skip": {
+      "post": {
+        "operationId": "skip_rule_recurring__rule_id__skip_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Skip Rule",
+        "tags": [
+          "recurring"
+        ]
+      }
+    },
+    "/reminders/upcoming": {
+      "get": {
+        "description": "What to remind the user of now: active rules within their window or past due (\u00a712).\nThe phone app (P6) turns this into notifications.",
+        "operationId": "upcoming_reminders_upcoming_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleOut"
+                  },
+                  "title": "Response Upcoming Reminders Upcoming Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Upcoming",
+        "tags": [
+          "recurring"
         ]
       }
     },
@@ -2729,6 +3596,61 @@
           }
         },
         "summary": "Spend",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/split": {
+      "post": {
+        "description": "Split a bill: your share as a spend, each friend's as a lend on the same account.\nWith preview, answers 200 with the shares and writes nothing.",
+        "operationId": "split_bill_transactions_split_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SplitIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SplitOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Split Bill",
         "tags": [
           "transactions"
         ]

@@ -2,9 +2,10 @@
 import { dueText } from "./AccountPage";
 import type { Filter } from "./Activity";
 import type { Kind } from "./AddAccount";
-import type { Account, Book } from "./api";
+import type { Account, Book, Rule } from "./api";
 import { monthLabel } from "./dates";
 import { MiniCard } from "./cards";
+import { RuleReminder, SubscriptionsPanel } from "./Subscriptions";
 import { AccountMark, BrandTile } from "./ui";
 
 const KIND_LABEL: Record<string, string> = { cash: "Cash", bank: "Bank" };
@@ -62,10 +63,14 @@ export function Overview({
   book,
   onAddAccount,
   onShow,
+  onRule,
+  onChanged,
 }: {
   book: Book;
   onAddAccount: (kind: Kind) => void;
   onShow: (filter: Filter) => void; // open Activity narrowed to a brand or category
+  onRule: (rule: Rule | "new") => void; // open a subscription, or the add sheet
+  onChanged: () => void;
 }) {
   const { summary } = book;
   const active = book.accounts.filter((a) => a.is_active);
@@ -78,6 +83,8 @@ export function Overview({
   const dueSoon = cards.filter(
     (c) => c.balance.minor > 0 && c.credit?.days_until_due != null && c.credit.days_until_due <= 7,
   );
+  // Subscriptions inside their reminder window (the server decides: `remind`).
+  const reminders = book.rules.filter((r) => r.is_active && r.remind);
 
   return (
     <>
@@ -91,8 +98,11 @@ export function Overview({
         </div>
       </section>
 
-      {dueSoon.length > 0 && (
+      {dueSoon.length + reminders.length > 0 && (
         <section className="due-strip glass" aria-label="Payments due soon">
+          {reminders.map((r) => (
+            <RuleReminder key={r.id} rule={r} onChanged={onChanged} onOpen={onRule} />
+          ))}
           {dueSoon.map((c) => (
             <a key={c.id} className="due-item" href={`#/account/${c.id}`}>
               <AccountMark account={c} />
@@ -198,6 +208,8 @@ export function Overview({
             ))}
           </section>
         )}
+
+        <SubscriptionsPanel rules={book.rules} onAdd={() => onRule("new")} onOpen={onRule} />
 
         <section className="panel glass">
           <h2>Friends</h2>

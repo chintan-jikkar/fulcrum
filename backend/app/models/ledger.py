@@ -56,6 +56,12 @@ class TransactionTemplate(StrEnum):
     opening = "opening"
 
 
+class RecurringCadence(StrEnum):
+    weekly = "weekly"
+    monthly = "monthly"
+    yearly = "yearly"
+
+
 class PaymentMethod(StrEnum):
     cash = "cash"
     bank_transfer = "bank_transfer"
@@ -159,4 +165,25 @@ class IdempotencyKey(Base):
     request_hash: Mapped[str]
     response_status: Mapped[int | None] = mapped_column(SmallInteger)  # null while in flight
     response_body: Mapped[Any | None] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = _created_at()
+
+
+class RecurringRule(Base):
+    """A subscription or other repeating charge (§12, migration 0004). Proposes; never posts."""
+
+    __tablename__ = "recurring_rules"
+
+    id: Mapped[uuid.UUID] = _id()
+    user_id: Mapped[uuid.UUID] = _user_id()
+    name: Mapped[str]
+    amount_minor: Mapped[int] = mapped_column(BigInteger)
+    funding_id: Mapped[uuid.UUID]
+    category_id: Mapped[uuid.UUID]
+    cadence: Mapped[RecurringCadence] = mapped_column(
+        Enum(RecurringCadence, name="recurring_cadence")
+    )
+    anchor_day: Mapped[int] = mapped_column(SmallInteger)
+    next_due_on: Mapped[date]
+    remind_days: Mapped[int] = mapped_column(SmallInteger, server_default="2")
+    is_active: Mapped[bool] = mapped_column(server_default="true")
     created_at: Mapped[datetime] = _created_at()

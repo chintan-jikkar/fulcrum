@@ -5,10 +5,12 @@ import { AccountPage } from "./AccountPage";
 import { Activity, type Filter } from "./Activity";
 import { AddAccount, type Kind } from "./AddAccount";
 import { AddTransaction, type Preset } from "./AddTransaction";
-import { type Book, loadBook, post } from "./api";
+import { type Book, loadBook, post, type Rule } from "./api";
 import { Friends } from "./Friends";
 import { Overview } from "./Overview";
 import { Settings } from "./Settings";
+import { SplitBill } from "./SplitBill";
+import { RuleSheet } from "./Subscriptions";
 
 type Tab = "overview" | "activity" | "friends" | "settings";
 const TABS: { id: Tab; label: string; glyph: string }[] = [
@@ -31,6 +33,9 @@ export function App() {
   // null: closed; otherwise the kind of account the sheet opens as.
   const [addingAccount, setAddingAccount] = useState<Kind | null>(null);
   const [filter, setFilter] = useState<Filter>(null);
+  const [splitting, setSplitting] = useState(false);
+  // null: closed; "new": add a subscription; a rule: edit (or cancel) that one.
+  const [rule, setRule] = useState<Rule | "new" | null>(null);
   // An account page is a link (#/account/<id>), so the browser's Back button and "open in new
   // tab" both work. The hash is the single source of truth; this state just follows it.
   const [accountId, setAccountId] = useState(accountInHash);
@@ -116,6 +121,8 @@ export function App() {
           <Overview
             book={book}
             onAddAccount={setAddingAccount}
+            onRule={setRule}
+            onChanged={reload}
             onShow={(f) => {
               setFilter(f);
               setTab("activity");
@@ -136,7 +143,7 @@ export function App() {
           </>
         )}
         {book && !accountId && tab === "friends" && (
-          <Friends book={book} onAdd={setAdding} />
+          <Friends book={book} onAdd={setAdding} onSplit={() => setSplitting(true)} />
         )}
         {book && !accountId && tab === "settings" && (
           <Settings book={book} onChanged={reload} onAddAccount={setAddingAccount} />
@@ -164,9 +171,32 @@ export function App() {
           today={book.summary.as_of}
           kind={addingAccount}
           banks={book.accounts.filter((a) => a.is_active && a.subtype === "bank")}
+          issuers={book.issuers}
           onClose={() => setAddingAccount(null)}
           onDone={() => {
             setAddingAccount(null);
+            reload();
+          }}
+        />
+      )}
+      {book && splitting && (
+        <SplitBill
+          book={book}
+          onClose={() => setSplitting(false)}
+          onDone={() => {
+            setSplitting(false);
+            reload();
+          }}
+        />
+      )}
+      {book && rule && (
+        <RuleSheet
+          key={rule === "new" ? "new" : rule.id}
+          book={book}
+          rule={rule === "new" ? undefined : rule}
+          onClose={() => setRule(null)}
+          onDone={() => {
+            setRule(null);
             reload();
           }}
         />
