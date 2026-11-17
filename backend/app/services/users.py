@@ -3,6 +3,7 @@
 The one service function that does not take `user_id` first: it is how a user id comes to exist.
 """
 
+import uuid
 from zoneinfo import available_timezones
 
 from sqlalchemy import select
@@ -17,6 +18,7 @@ from app.models.ledger import (
     CategoryKind,
     User,
 )
+from app.services.ledger import RuleViolation
 
 # Copied to every new user, then theirs to edit. Food, Transport, Subscriptions and Salary are
 # the ones SCENARIOS.md §D uses.
@@ -79,3 +81,20 @@ def provision_user(session: Session, auth_sub: str, display_name: str, timezone:
         session.flush()
 
     return session.scalars(select(User).where(User.auth_sub == auth_sub)).one()
+
+
+def update_profile(
+    session: Session, user_id: uuid.UUID, *, display_name: str | None, timezone: str | None
+) -> User:
+    """The settings screen's profile edit. A new timezone moves "today" and month boundaries."""
+    user = session.get_one(User, user_id)
+    if display_name is not None:
+        if not display_name.strip():
+            raise RuleViolation("profile", "name is empty")
+        user.display_name = display_name.strip()
+    if timezone is not None:
+        if timezone not in available_timezones():
+            raise RuleViolation("timezone", f"unknown IANA timezone: {timezone!r}")
+        user.timezone = timezone
+    session.flush()
+    return user

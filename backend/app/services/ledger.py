@@ -370,6 +370,33 @@ def unarchive_account(session: Session, user_id: uuid.UUID, account_id: uuid.UUI
     return acct
 
 
+def edit_account(
+    session: Session,
+    user_id: uuid.UUID,
+    account_id: uuid.UUID,
+    *,
+    name: str | None = None,
+    limit_minor: int | None = None,
+) -> Account:
+    """Rename a cash, bank or card account, or change a card's limit. Person accounts take their
+    name from the counterparty, so they are not edited here."""
+    acct = _lock_account(session, user_id, account_id, exclusive=True)
+    if acct.subtype not in CASH_BANK_CARD:
+        raise RuleViolation("account", f"{acct.subtype} accounts are not edited directly")
+    if name is not None:
+        if not name.strip():
+            raise RuleViolation("account", "name is empty")
+        acct.name = name.strip()
+    if limit_minor is not None:
+        if acct.subtype is not Sub.credit_card:
+            raise RuleViolation("account", "only a credit card has a limit")
+        if not 0 < limit_minor <= MAX_MINOR:
+            raise RuleViolation("account", f"limit_minor must be positive cents, got {limit_minor}")
+        acct.meta = {**acct.meta, "limit_minor": limit_minor}  # a new dict so the change is seen
+    session.flush()
+    return acct
+
+
 # --- The ten templates (§4). X is amount_minor, always positive; debit is positive. ----------
 
 

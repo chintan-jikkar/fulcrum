@@ -36,6 +36,30 @@ jobs:
       - run: uv run mypy
       - run: uv run pytest
 
+  # The TypeScript client is generated from the API's OpenAPI schema (CLAUDE.md §6). This job
+  # regenerates it and fails if the checked-in copy is stale, then type-checks and builds the app.
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: uv sync --frozen
+        working-directory: backend
+      - run: npm ci
+        working-directory: web
+      - run: npm run gen:api
+        working-directory: web
+      - run: git diff --exit-code packages/api-client
+      - run: npm run build
+        working-directory: web
+
   # Proves the P0 exit criterion (`docker compose up` works) on every push.
   compose:
     runs-on: ubuntu-latest

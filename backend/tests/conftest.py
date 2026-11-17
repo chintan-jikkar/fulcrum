@@ -1,13 +1,18 @@
 from collections.abc import Iterator
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi.testclient import TestClient
 from sqlalchemy import Connection, Engine, create_engine, text
 from sqlalchemy.engine import make_url
 
 from app.config import settings
+
+if TYPE_CHECKING:
+    from tests.test_api import Caller
 
 ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
 
@@ -45,3 +50,19 @@ def conn(engine: Engine) -> Iterator[Connection]:
     with engine.connect() as c:
         yield c
         c.rollback()
+
+
+# The HTTP tenant fixtures, shared by test_api and test_settings.
+@pytest.fixture
+def api(engine: Engine) -> Iterator[TestClient]:
+    from tests.test_idempotency import client_for
+
+    with client_for(engine) as c:
+        yield c
+
+
+@pytest.fixture
+def me(api: TestClient, engine: Engine) -> "Caller":
+    from tests.test_api import Caller
+
+    return Caller(api, engine)

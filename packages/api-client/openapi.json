@@ -1,0 +1,2496 @@
+{
+  "components": {
+    "schemas": {
+      "AccountEdit": {
+        "additionalProperties": false,
+        "properties": {
+          "limit_minor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Minor"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "AccountEdit",
+        "type": "object"
+      },
+      "AccountIn": {
+        "additionalProperties": false,
+        "properties": {
+          "limit_minor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Minor"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "subtype": {
+            "$ref": "#/components/schemas/AccountSubtype"
+          }
+        },
+        "required": [
+          "name",
+          "subtype"
+        ],
+        "title": "AccountIn",
+        "type": "object"
+      },
+      "AccountKind": {
+        "enum": [
+          "ASSET",
+          "LIABILITY",
+          "EXTERNAL"
+        ],
+        "title": "AccountKind",
+        "type": "string"
+      },
+      "AccountOut": {
+        "properties": {
+          "balance": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrandOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "counterparty_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Id"
+          },
+          "credit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CardCredit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AccountKind"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "subtype": {
+            "$ref": "#/components/schemas/AccountSubtype"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "subtype",
+          "kind",
+          "is_active",
+          "counterparty_id",
+          "balance",
+          "credit",
+          "brand"
+        ],
+        "title": "AccountOut",
+        "type": "object"
+      },
+      "AccountSubtype": {
+        "enum": [
+          "cash",
+          "bank",
+          "credit_card",
+          "receivable",
+          "payable",
+          "world",
+          "opening"
+        ],
+        "title": "AccountSubtype",
+        "type": "string"
+      },
+      "BorrowIn": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "counterparty_id": {
+            "format": "uuid",
+            "title": "Counterparty Id",
+            "type": "string"
+          },
+          "dest_id": {
+            "format": "uuid",
+            "title": "Dest Id",
+            "type": "string"
+          },
+          "memo": {
+            "default": "",
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "occurred_on",
+          "counterparty_id",
+          "dest_id"
+        ],
+        "title": "BorrowIn",
+        "type": "object"
+      },
+      "BrandOut": {
+        "description": "What the API sends: enough for the web to draw the tile.",
+        "properties": {
+          "color": {
+            "title": "Color",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "mark": {
+            "title": "Mark",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "color",
+          "mark"
+        ],
+        "title": "BrandOut",
+        "type": "object"
+      },
+      "CardCredit": {
+        "properties": {
+          "available": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "utilization_bps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Utilization Bps"
+          },
+          "utilization_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Utilization Display"
+          }
+        },
+        "required": [
+          "limit",
+          "available",
+          "utilization_bps",
+          "utilization_display"
+        ],
+        "title": "CardCredit",
+        "type": "object"
+      },
+      "CardPaymentIn": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "card_id": {
+            "format": "uuid",
+            "title": "Card Id",
+            "type": "string"
+          },
+          "funding_id": {
+            "format": "uuid",
+            "title": "Funding Id",
+            "type": "string"
+          },
+          "memo": {
+            "default": "",
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "occurred_on",
+          "card_id",
+          "funding_id"
+        ],
+        "title": "CardPaymentIn",
+        "type": "object"
+      },
+      "CategoryKind": {
+        "enum": [
+          "expense",
+          "income"
+        ],
+        "title": "CategoryKind",
+        "type": "string"
+      },
+      "CategoryOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_archived": {
+            "title": "Is Archived",
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CategoryKind"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "parent_id",
+          "is_archived"
+        ],
+        "title": "CategoryOut",
+        "type": "object"
+      },
+      "CategoryRef": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "CategoryRef",
+        "type": "object"
+      },
+      "CategoryTotal": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CategoryKind"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "share_bps": {
+            "title": "Share Bps",
+            "type": "integer"
+          },
+          "total": {
+            "$ref": "#/components/schemas/Money"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "parent_id",
+          "total",
+          "share_bps"
+        ],
+        "title": "CategoryTotal",
+        "type": "object"
+      },
+      "CounterpartyIn": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CounterpartyIn",
+        "type": "object"
+      },
+      "CounterpartyOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "CounterpartyOut",
+        "type": "object"
+      },
+      "CreditSummary": {
+        "properties": {
+          "available": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "owed": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "utilization_bps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Utilization Bps"
+          },
+          "utilization_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Utilization Display"
+          }
+        },
+        "required": [
+          "limit",
+          "owed",
+          "available",
+          "utilization_bps",
+          "utilization_display"
+        ],
+        "title": "CreditSummary",
+        "type": "object"
+      },
+      "FriendOutIn": {
+        "additionalProperties": false,
+        "description": "lend, friend_repay, repay_friend: money moves between a person and `funding`.",
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "counterparty_id": {
+            "format": "uuid",
+            "title": "Counterparty Id",
+            "type": "string"
+          },
+          "funding_id": {
+            "format": "uuid",
+            "title": "Funding Id",
+            "type": "string"
+          },
+          "memo": {
+            "default": "",
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "occurred_on",
+          "counterparty_id",
+          "funding_id"
+        ],
+        "title": "FriendOutIn",
+        "type": "object"
+      },
+      "FriendPosition": {
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "counterparty_id": {
+            "format": "uuid",
+            "title": "Counterparty Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "position": {
+            "$ref": "#/components/schemas/Money"
+          }
+        },
+        "required": [
+          "counterparty_id",
+          "name",
+          "position",
+          "amount"
+        ],
+        "title": "FriendPosition",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "IncomeIn": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "category_id": {
+            "format": "uuid",
+            "title": "Category Id",
+            "type": "string"
+          },
+          "dest_id": {
+            "format": "uuid",
+            "title": "Dest Id",
+            "type": "string"
+          },
+          "memo": {
+            "default": "",
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "occurred_on",
+          "dest_id",
+          "category_id"
+        ],
+        "title": "IncomeIn",
+        "type": "object"
+      },
+      "Leg": {
+        "properties": {
+          "account_id": {
+            "format": "uuid",
+            "title": "Account Id",
+            "type": "string"
+          },
+          "account_name": {
+            "title": "Account Name",
+            "type": "string"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "subtype": {
+            "$ref": "#/components/schemas/AccountSubtype"
+          }
+        },
+        "required": [
+          "account_id",
+          "account_name",
+          "subtype",
+          "amount"
+        ],
+        "title": "Leg",
+        "type": "object"
+      },
+      "MerchantTotal": {
+        "properties": {
+          "color": {
+            "title": "Color",
+            "type": "string"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "mark": {
+            "title": "Mark",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "total": {
+            "$ref": "#/components/schemas/Money"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "color",
+          "mark",
+          "total",
+          "count"
+        ],
+        "title": "MerchantTotal",
+        "type": "object"
+      },
+      "Money": {
+        "description": "Every amount the API returns: the exact integer and the string the UI shows as is.",
+        "properties": {
+          "display": {
+            "title": "Display",
+            "type": "string"
+          },
+          "minor": {
+            "title": "Minor",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "minor",
+          "display"
+        ],
+        "title": "Money",
+        "type": "object"
+      },
+      "MonthSummary": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryTotal"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "end": {
+            "format": "date",
+            "title": "End",
+            "type": "string"
+          },
+          "expense": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "income": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "merchants": {
+            "items": {
+              "$ref": "#/components/schemas/MerchantTotal"
+            },
+            "title": "Merchants",
+            "type": "array"
+          },
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "expense",
+          "income",
+          "categories",
+          "merchants"
+        ],
+        "title": "MonthSummary",
+        "type": "object"
+      },
+      "OpeningIn": {
+        "additionalProperties": false,
+        "properties": {
+          "account_id": {
+            "format": "uuid",
+            "title": "Account Id",
+            "type": "string"
+          },
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "memo": {
+            "default": "",
+            "title": "Memo",
+            "type": "string"
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "occurred_on",
+          "account_id"
+        ],
+        "title": "OpeningIn",
+        "type": "object"
+      },
+      "PaymentMethod": {
+        "enum": [
+          "cash",
+          "bank_transfer",
+          "card",
+          "other"
+        ],
+        "title": "PaymentMethod",
+        "type": "string"
+      },
+      "Profile": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "display_name",
+          "timezone"
+        ],
+        "title": "Profile",
+        "type": "object"
+      },
+      "ProfileEdit": {
+        "additionalProperties": false,
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "title": "ProfileEdit",
+        "type": "object"
+      },
+      "RefundIn": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "funding_id": {
+            "format": "uuid",
+            "title": "Funding Id",
+            "type": "string"
+          },
+          "memo": {
+            "default": "",
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "refund_of_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Of Id"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "occurred_on",
+          "funding_id"
+        ],
+        "title": "RefundIn",
+        "type": "object"
+      },
+      "SpendIn": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "category_id": {
+            "format": "uuid",
+            "title": "Category Id",
+            "type": "string"
+          },
+          "funding_id": {
+            "format": "uuid",
+            "title": "Funding Id",
+            "type": "string"
+          },
+          "memo": {
+            "default": "",
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "occurred_on",
+          "funding_id",
+          "category_id"
+        ],
+        "title": "SpendIn",
+        "type": "object"
+      },
+      "Summary": {
+        "properties": {
+          "as_of": {
+            "format": "date",
+            "title": "As Of",
+            "type": "string"
+          },
+          "credit": {
+            "$ref": "#/components/schemas/CreditSummary"
+          },
+          "friends": {
+            "items": {
+              "$ref": "#/components/schemas/FriendPosition"
+            },
+            "title": "Friends",
+            "type": "array"
+          },
+          "month": {
+            "$ref": "#/components/schemas/MonthSummary"
+          },
+          "net_worth": {
+            "$ref": "#/components/schemas/Money"
+          }
+        },
+        "required": [
+          "as_of",
+          "net_worth",
+          "credit",
+          "month",
+          "friends"
+        ],
+        "title": "Summary",
+        "type": "object"
+      },
+      "TransactionOut": {
+        "description": "What a write returns: the transaction row.",
+        "properties": {
+          "category_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "memo": {
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "refund_of_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Of Id"
+          },
+          "template": {
+            "$ref": "#/components/schemas/TransactionTemplate"
+          },
+          "voided_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voided At"
+          }
+        },
+        "required": [
+          "id",
+          "template",
+          "occurred_on",
+          "memo",
+          "category_id",
+          "method",
+          "refund_of_id",
+          "voided_at",
+          "created_at"
+        ],
+        "title": "TransactionOut",
+        "type": "object"
+      },
+      "TransactionRow": {
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrandOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CategoryRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "title": "Legs",
+            "type": "array"
+          },
+          "memo": {
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "net": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "refund_of_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Of Id"
+          },
+          "template": {
+            "$ref": "#/components/schemas/TransactionTemplate"
+          },
+          "voided_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voided At"
+          }
+        },
+        "required": [
+          "id",
+          "template",
+          "occurred_on",
+          "memo",
+          "method",
+          "category",
+          "refund_of_id",
+          "voided_at",
+          "brand",
+          "amount",
+          "net",
+          "legs"
+        ],
+        "title": "TransactionRow",
+        "type": "object"
+      },
+      "TransactionTemplate": {
+        "enum": [
+          "spend",
+          "income",
+          "refund",
+          "transfer",
+          "card_payment",
+          "lend",
+          "friend_repay",
+          "borrow",
+          "repay_friend",
+          "opening"
+        ],
+        "title": "TransactionTemplate",
+        "type": "string"
+      },
+      "TransferIn": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "title": "Amount Minor",
+            "type": "integer"
+          },
+          "from_id": {
+            "format": "uuid",
+            "title": "From Id",
+            "type": "string"
+          },
+          "memo": {
+            "default": "",
+            "title": "Memo",
+            "type": "string"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "to_id": {
+            "format": "uuid",
+            "title": "To Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount_minor",
+          "occurred_on",
+          "from_id",
+          "to_id"
+        ],
+        "title": "TransferIn",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Parity API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/accounts": {
+      "get": {
+        "description": "Every account the user sees, with today's balance. World and opening never appear.",
+        "operationId": "list_accounts_accounts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AccountOut"
+                  },
+                  "title": "Response List Accounts Accounts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Accounts",
+        "tags": [
+          "book"
+        ]
+      },
+      "post": {
+        "operationId": "create_account_accounts_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Account",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/accounts/{account_id}": {
+      "post": {
+        "description": "Rename an account, or change a card's limit (the settings screen).",
+        "operationId": "edit_account_accounts__account_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Account Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Edit Account",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/accounts/{account_id}/archive": {
+      "post": {
+        "operationId": "archive_account_accounts__account_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Account Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive Account",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/accounts/{account_id}/unarchive": {
+      "post": {
+        "operationId": "unarchive_account_accounts__account_id__unarchive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Account Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unarchive Account",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/brands/{key}/logo": {
+      "get": {
+        "description": "A brand's logo (D-067). Public, like a favicon: it is the same for everyone and says\nnothing about the caller. Only keys from the brand table are looked up.",
+        "operationId": "brand_logo_brands__key__logo_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "theme",
+            "required": false,
+            "schema": {
+              "default": "light",
+              "enum": [
+                "light",
+                "dark"
+              ],
+              "title": "Theme",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Brand Logo",
+        "tags": [
+          "brands"
+        ]
+      }
+    },
+    "/categories": {
+      "get": {
+        "operationId": "list_categories_categories_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryOut"
+                  },
+                  "title": "Response List Categories Categories Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Categories",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/counterparties": {
+      "get": {
+        "operationId": "list_counterparties_counterparties_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CounterpartyOut"
+                  },
+                  "title": "Response List Counterparties Counterparties Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Counterparties",
+        "tags": [
+          "book"
+        ]
+      },
+      "post": {
+        "operationId": "create_counterparty_counterparties_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterpartyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CounterpartyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Counterparty",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/me": {
+      "get": {
+        "operationId": "get_profile_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Profile",
+        "tags": [
+          "book"
+        ]
+      },
+      "post": {
+        "operationId": "edit_profile_me_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Edit Profile",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/summary": {
+      "get": {
+        "description": "The dashboard figures as of today in the user's timezone (\u00a75).",
+        "operationId": "summary_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Summary",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/transactions": {
+      "get": {
+        "description": "Newest first, voided ones included (\u00a76: a void stays visible in history).",
+        "operationId": "list_transactions_transactions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionRow"
+                  },
+                  "title": "Response List Transactions Transactions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Transactions",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/borrow": {
+      "post": {
+        "operationId": "borrow_transactions_borrow_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Borrow",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/card_payment": {
+      "post": {
+        "operationId": "card_payment_transactions_card_payment_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardPaymentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Card Payment",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/friend_repay": {
+      "post": {
+        "operationId": "friend_repay_transactions_friend_repay_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendOutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Friend Repay",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/income": {
+      "post": {
+        "operationId": "income_transactions_income_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncomeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Income",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/lend": {
+      "post": {
+        "operationId": "lend_transactions_lend_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendOutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lend",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/opening": {
+      "post": {
+        "operationId": "opening_transactions_opening_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpeningIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Opening",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/refund": {
+      "post": {
+        "operationId": "refund_transactions_refund_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Refund",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/repay_friend": {
+      "post": {
+        "operationId": "repay_friend_transactions_repay_friend_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendOutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Repay Friend",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/spend": {
+      "post": {
+        "operationId": "spend_transactions_spend_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpendIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Spend",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/transfer": {
+      "post": {
+        "operationId": "transfer_transactions_transfer_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Transfer",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/{transaction_id}/void": {
+      "post": {
+        "operationId": "void_transactions__transaction_id__void_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Transaction Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Void",
+        "tags": [
+          "transactions"
+        ]
+      }
+    }
+  }
+}

@@ -192,6 +192,27 @@ def category_totals(
     )
 
 
+def expense_by_memo(
+    session: Session, user_id: uuid.UUID, *, start: date, end: date
+) -> list[tuple[str, int]]:
+    """(memo, amount) for each non-voided spend or refund in an expense category over
+    [start, end]: the world leg, so a refund is negative. The summary groups these by brand."""
+    q = (
+        select(Transaction.memo, Posting.amount_minor)
+        .join(Category, Category.id == Transaction.category_id)
+        .join(Posting, Posting.transaction_id == Transaction.id)
+        .join(Account, Account.id == Posting.account_id)
+        .where(
+            Transaction.user_id == user_id,
+            Transaction.voided_at.is_(None),
+            Transaction.occurred_on.between(start, end),
+            Category.kind == CategoryKind.expense,
+            Account.subtype == Sub.world,
+        )
+    )
+    return [(memo, int(amount)) for memo, amount in session.execute(q)]
+
+
 def friend_positions(
     session: Session, user_id: uuid.UUID, as_of: date | None = None
 ) -> dict[uuid.UUID, int]:

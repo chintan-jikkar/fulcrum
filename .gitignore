@@ -1,9 +1,13 @@
 .env
-.venv/
+.venv
 __pycache__/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
-node_modules/
+node_modules
 dist/
 .DS_Store
+# iCloud Drive skips *.nosync, so the real .venv and node_modules live there behind symlinks.
+*.nosync
+# Brand logos fetched from Logo.dev at runtime (D-067); trademarks, never committed.
+.logos/
